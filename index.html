@@ -868,7 +868,15 @@
                                 .card-section { margin-bottom: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 5px; background-color: #f9f9f9;}
                                 .card-section h3, .card-section h4 { margin-top: 0; font-size: 1.2em; }
                                 .card-section .emoji { font-size: 2em; margin-right: 10px; vertical-align: middle; }
-                                .story-content { white-space: pre-wrap; background-color: #e9f5ff; padding: 15px; border-radius: 5px; font-family: 'Courier New', Courier, monospace; }
+                                .story-content { 
+                                    white-space: pre-wrap; 
+                                    background-color: #e9f5ff; 
+                                    padding: 15px; 
+                                    border-radius: 5px; 
+                                    font-family: 'Courier New', Courier, monospace; 
+                                    overflow-wrap: break-word; /* Added for long word wrapping */
+                                    word-wrap: break-word; /* Older browsers compatibility */
+                                }
                                 .form-data p { margin: 5px 0; }
                                 .form-data strong { color: #2c5282; min-width: 180px; display: inline-block;}
                                 .situation-active { background-color: #fee2e2 !important; border-color: #f87171 !important; }
