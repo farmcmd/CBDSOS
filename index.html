@@ -729,7 +729,7 @@
             story += `為了解決${mysteryContextForStory}的謎團，\n`;
             story += `我和組員夥伴推理出${mysteryContextForStory}的可能原因是：${formData.get('clueReasoning') || (situationRevealed ? SITUATION_TEXT : '(未填寫)' )}\n`;
 
-            story += `我抽到的線索是 ${drawnCards.clue ? drawnCards.clue.name + ' (' + drawnCards.clue.emoji + ')' : '(未選擇線索)'}。\n`; 
+            story += `我抽到的線索是 ${drawnCards.clue ? drawnCards.clue.name + ' (' + drawnCards.clue.emoji + ')' : '(未選擇線索)'}。\n`;
             const isClueReason = formData.get('isClueReason');
             story += `我認為這 ${isClueReason ? isClueReason : '(未選擇)'} ${document.getElementById('clueReasonSuffix').textContent.trim()}\n`; 
             story += `${document.getElementById('clueFollowUpText').textContent.trim()}\n\n`; 
@@ -1236,11 +1236,9 @@
                 </body>
                 </html>
                 `;
-                const guideWindow = window.open("https://docs.google.com/document/d/1vuKAqQ-JTBdO7CYI8IJd5BdroPfNHMjO9unnKH4CNtA/edit?usp=sharing", "_blank");
-                // It's generally not possible to directly write content to a Google Docs URL this way.
-                // The best approach is to link directly to the Google Doc.
-                // If you need to display the content within your app, you'd typically embed it or fetch and parse it,
-                // but for a simple link to a guide, window.open is sufficient.
+                const guideWindow = window.open("", "_blank");
+                guideWindow.document.write(guideContent);
+                guideWindow.document.close();
             } else if (password !== null) { 
                 alert("密碼錯誤！");
             }
