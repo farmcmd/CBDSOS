@@ -108,24 +108,23 @@
             border-radius: 8px;
             border: 1px solid #e5e7eb;
         }
-        /* Modal Styles (kept for potential future use, though password modal is custom) */
         .modal {
-            display: none; /* Hidden by default */
-            position: fixed; /* Stay in place */
-            z-index: 1000; /* Sit on top */
+            display: none; 
+            position: fixed; 
+            z-index: 1000; 
             left: 0;
             top: 0;
-            width: 100%; /* Full width */
-            height: 100%; /* Full height */
-            overflow: auto; /* Enable scroll if needed */
-            background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+            width: 100%; 
+            height: 100%; 
+            overflow: auto; 
+            background-color: rgba(0,0,0,0.4); 
         }
         .modal-content {
             background-color: #fefefe;
-            margin: 15% auto; /* 15% from the top and centered */
+            margin: 15% auto; 
             padding: 20px;
             border: 1px solid #888;
-            width: 80%; /* Could be more or less, depending on screen size */
+            width: 80%; 
             max-width: 500px;
             border-radius: 8px;
             box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
@@ -226,7 +225,7 @@
                     <span>指導老師教學指南</span>
                 </button>
             </div>
-            <p id="guidePasswordError" class="text-red-500 text-sm mt-1 mb-2 hidden">教學指南密碼錯誤！</p> <!-- Error message for guide password -->
+            <p id="guidePasswordError" class="text-red-500 text-sm mt-1 mb-2 hidden">教學指南密碼錯誤！</p> 
             <form id="storyForm" class="space-y-6">
                 <div>
                     <label for="myName" class="block text-sm font-medium text-gray-700">我的名字叫 (自我介紹):</label>
@@ -474,7 +473,7 @@
             </button>
         </section>
 
-        <!-- Modal for Password Input (Generic, can be adapted or replaced if a more specific style is needed) -->
+        <!-- Modal for Password Input -->
         <div id="passwordModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center hidden z-50">
             <div class="bg-white p-8 rounded-lg shadow-xl w-11/12 md:w-1/3">
                 <h3 class="text-xl font-semibold mb-4" id="modalTitle">輸入密碼</h3>
@@ -539,40 +538,61 @@
 
         // Function to draw a card
         function drawCard(type) {
-            const cards = cardData[type];
-            if (!cards || cards.length === 0) return;
+            try {
+                console.log(`Attempting to draw card of type: ${type}`);
+                const cards = cardData[type];
+                if (!cards || cards.length === 0) {
+                    console.warn(`No cards found for type: ${type}`);
+                    return;
+                }
 
-            const randomIndex = Math.floor(Math.random() * cards.length);
-            const card = cards[randomIndex];
-            
-            drawnCards[type] = card;
+                const randomIndex = Math.floor(Math.random() * cards.length);
+                const card = cards[randomIndex];
+                console.log(`Drawn card:`, card);
+                
+                drawnCards[type] = card;
 
-            const cardContainer = document.getElementById(`${type}CardContainer`);
-            const cardBack = document.getElementById(`${type}CardBack`);
-            
-            cardBack.innerHTML = `
-                <p class="text-2xl mb-2">${card.emoji}</p>
-                <h4 class="text-lg font-bold mb-1">${card.name}</h4>
-                <p class="text-xs text-left">${card.description}</p>
-            `;
-            if (!cardContainer.classList.contains('flipped')) {
-                cardContainer.classList.add('flipped');
+                const cardContainer = document.getElementById(`${type}CardContainer`);
+                const cardBack = document.getElementById(`${type}CardBack`);
+                
+                if (!cardContainer || !cardBack) {
+                    console.error(`Card container or back not found for type: ${type}`);
+                    return;
+                }
+
+                cardBack.innerHTML = `
+                    <p class="text-2xl mb-2">${card.emoji}</p>
+                    <h4 class="text-lg font-bold mb-1">${card.name}</h4>
+                    <p class="text-xs text-left">${card.description}</p>
+                `;
+                if (!cardContainer.classList.contains('flipped')) {
+                    cardContainer.classList.add('flipped');
+                }
+
+                updateDrawnCardDisplay(type, card);
+                updateStoryFormWithCard(type, card);
+                console.log(`Card draw successful for type: ${type}`);
+            } catch (error) {
+                console.error(`Error in drawCard for type ${type}:`, error);
             }
-
-            updateDrawnCardDisplay(type, card);
-            updateStoryFormWithCard(type, card);
         }
 
         // Function to update the "My Drawn Cards" section
         function updateDrawnCardDisplay(type, card) {
-            const displayElement = document.getElementById(`drawn${type.charAt(0).toUpperCase() + type.slice(1)}Card`);
-            if (displayElement) {
-                displayElement.innerHTML = `
-                    <h3>${cardTypeToChinese(type)}：</h3>
-                    <p class="emoji">${card.emoji}</p>
-                    <p class="font-semibold">${card.name}</p>
-                    <p class="text-sm text-gray-600">${card.description}</p>
-                `;
+            try {
+                const displayElement = document.getElementById(`drawn${type.charAt(0).toUpperCase() + type.slice(1)}Card`);
+                if (displayElement) {
+                    displayElement.innerHTML = `
+                        <h3>${cardTypeToChinese(type)}：</h3>
+                        <p class="emoji">${card.emoji}</p>
+                        <p class="font-semibold">${card.name}</p>
+                        <p class="text-sm text-gray-600">${card.description}</p>
+                    `;
+                } else {
+                    console.warn(`Display element not found for drawn card type: ${type}`);
+                }
+            } catch (error) {
+                console.error(`Error in updateDrawnCardDisplay for type ${type}:`, error);
             }
         }
         
@@ -588,481 +608,562 @@
 
         // Function to update story form with drawn card info
         function updateStoryFormWithCard(type, card) {
-            if (type === 'character') {
-                document.getElementById('storyCharacterName').textContent = card.name;
-                document.getElementById('animalKnowledgeLabel').innerHTML = `${card.name}有一些獨特的特性是 (寫下自己對<span class="font-bold text-indigo-600">${card.name}</span>的認識):`;
-                const hometownCharNameSpan = document.getElementById('hometownCharacterNameDisplay');
-                if (hometownCharNameSpan) { 
-                    hometownCharNameSpan.textContent = card.name;
+            try {
+                if (type === 'character') {
+                    const storyCharNameEl = document.getElementById('storyCharacterName');
+                    if(storyCharNameEl) storyCharNameEl.textContent = card.name;
+                    
+                    const animalKnowledgeLabelEl = document.getElementById('animalKnowledgeLabel');
+                    if(animalKnowledgeLabelEl) animalKnowledgeLabelEl.innerHTML = `${card.name}有一些獨特的特性是 (寫下自己對<span class="font-bold text-indigo-600">${card.name}</span>的認識):`;
+                    
+                    const hometownCharNameSpan = document.getElementById('hometownCharacterNameDisplay');
+                    if (hometownCharNameSpan) hometownCharNameSpan.textContent = card.name;
+                    
+                    const solutionCharNameSpan = document.getElementById('solutionCharacterName');
+                    if (solutionCharNameSpan) solutionCharNameSpan.textContent = card.name;
+
+                } else if (type === 'habitat') {
+                    const storyHabitatNameEl = document.getElementById('storyHabitatName');
+                    if(storyHabitatNameEl) storyHabitatNameEl.textContent = card.name;
+
+                } else if (type === 'clue') {
+                    const storyClueNameEl = document.getElementById('storyClueNameForReasoning');
+                    if(storyClueNameEl) storyClueNameEl.textContent = `${card.name} (${card.emoji})`;
+
+                } else if (type === 'solution') {
+                    const storySolutionNameEl = document.getElementById('storySolutionName');
+                    if(storySolutionNameEl) storySolutionNameEl.textContent = `${card.name} (${card.emoji})`;
                 }
-                const solutionCharNameSpan = document.getElementById('solutionCharacterName');
-                if (solutionCharNameSpan) {
-                    solutionCharNameSpan.textContent = card.name;
-                }
-            } else if (type === 'habitat') {
-                document.getElementById('storyHabitatName').textContent = card.name;
-            } else if (type === 'clue') {
-                document.getElementById('storyClueNameForReasoning').textContent = `${card.name} (${card.emoji})`;
-            } else if (type === 'solution') {
-                // This updates the "randomly drawn" solution card display
-                document.getElementById('storySolutionName').textContent = `${card.name} (${card.emoji})`;
+            } catch (error) {
+                console.error(`Error in updateStoryFormWithCard for type ${type}:`, error);
             }
         }
         
         // Function to reveal situation
         function revealSituation() {
-            const passwordInput = document.getElementById('situationPassword');
-            const passwordError = document.getElementById('passwordError');
-            const situationCardDisplay = document.getElementById('situationCardDisplay');
-            const passwordPrompt = document.getElementById('passwordPrompt');
-            const clueReasoningTextarea = document.getElementById('clueReasoning');
-            const situationContextClueSpan = document.getElementById('situationContextForClue');
-            const situationContextReasoningSpan = document.getElementById('situationContextForReasoning');
+            try {
+                const passwordInput = document.getElementById('situationPassword');
+                const passwordError = document.getElementById('passwordError');
+                const situationCardDisplay = document.getElementById('situationCardDisplay');
+                const passwordPrompt = document.getElementById('passwordPrompt');
+                const clueReasoningTextarea = document.getElementById('clueReasoning');
+                const situationContextClueSpan = document.getElementById('situationContextForClue');
+                const situationContextReasoningSpan = document.getElementById('situationContextForReasoning');
 
-            if (passwordInput.value === 'SOS99999') { // Example password
-                situationCardDisplay.classList.remove('hidden');
-                passwordPrompt.classList.add('hidden'); 
-                passwordError.classList.add('hidden');
-                situationRevealed = true;
+                if (!passwordInput || !passwordError || !situationCardDisplay || !passwordPrompt || !clueReasoningTextarea || !situationContextClueSpan || !situationContextReasoningSpan) {
+                    console.error("One or more elements for revealSituation not found.");
+                    return;
+                }
 
-                if (clueReasoningTextarea) {
-                    // Keep existing text if user already typed something, otherwise set default
+                if (passwordInput.value === 'SOS99999') { 
+                    situationCardDisplay.classList.remove('hidden');
+                    passwordPrompt.classList.add('hidden'); 
+                    passwordError.classList.add('hidden');
+                    situationRevealed = true;
+
                     if(clueReasoningTextarea.value.trim() === '' || clueReasoningTextarea.value.trim() === '???') {
                          clueReasoningTextarea.value = SITUATION_TEXT; 
                     }
-                }
-                if (situationContextClueSpan) {
                     situationContextClueSpan.textContent = SITUATION_TEXT; 
-                }
-                if (situationContextReasoningSpan) {
                     situationContextReasoningSpan.textContent = SITUATION_TEXT; 
+                    updateAdventureStory(); 
+                } else {
+                    passwordError.classList.remove('hidden');
+                    passwordInput.value = ''; 
                 }
-                updateAdventureStory(); 
-            } else {
-                passwordError.classList.remove('hidden');
-                passwordInput.value = ''; 
+            } catch (error) {
+                console.error("Error in revealSituation:", error);
             }
         }
 
         // Function to reveal all clues
         function revealAllClues() {
-            const passwordInput = document.getElementById('allCluesPassword');
-            const passwordError = document.getElementById('allCluesPasswordError');
-            const allCluesDisplay = document.getElementById('allCluesDisplay');
-            const allCluesPasswordPrompt = document.getElementById('allCluesPasswordPrompt');
+            try {
+                const passwordInput = document.getElementById('allCluesPassword');
+                const passwordError = document.getElementById('allCluesPasswordError');
+                const allCluesDisplay = document.getElementById('allCluesDisplay');
+                const allCluesPasswordPrompt = document.getElementById('allCluesPasswordPrompt');
 
-            if (passwordInput.value === '99999') { // Example password
-                allCluesPasswordPrompt.classList.add('hidden');
-                passwordError.classList.add('hidden');
-                allCluesDisplay.classList.remove('hidden');
-                allCluesDisplay.innerHTML = ''; 
+                if(!passwordInput || !passwordError || !allCluesDisplay || !allCluesPasswordPrompt) {
+                    console.error("One or more elements for revealAllClues not found.");
+                    return;
+                }
 
-                cardData.clue.forEach(clue => {
-                    const clueDiv = document.createElement('div');
-                    clueDiv.className = 'all-clues-card-display p-3'; 
-                    clueDiv.innerHTML = `
-                        <p class="emoji">${clue.emoji}</p>
-                        <h4 class="text-md font-semibold mb-1">${clue.name}</h4>
-                        <p class="text-xs text-gray-600">${clue.description}</p>
-                    `;
-                    allCluesDisplay.appendChild(clueDiv);
-                });
-                allCluesRevealed = true;
-                updateAdventureStory();
-            } else {
-                passwordError.classList.remove('hidden');
-                passwordInput.value = '';
+                if (passwordInput.value === '99999') { 
+                    allCluesPasswordPrompt.classList.add('hidden');
+                    passwordError.classList.add('hidden');
+                    allCluesDisplay.classList.remove('hidden');
+                    allCluesDisplay.innerHTML = ''; 
+
+                    cardData.clue.forEach(clue => {
+                        const clueDiv = document.createElement('div');
+                        clueDiv.className = 'all-clues-card-display p-3'; 
+                        clueDiv.innerHTML = `
+                            <p class="emoji">${clue.emoji}</p>
+                            <h4 class="text-md font-semibold mb-1">${clue.name}</h4>
+                            <p class="text-xs text-gray-600">${clue.description}</p>
+                        `;
+                        allCluesDisplay.appendChild(clueDiv);
+                    });
+                    allCluesRevealed = true;
+                    updateAdventureStory();
+                } else {
+                    passwordError.classList.remove('hidden');
+                    passwordInput.value = '';
+                }
+            } catch (error) {
+                console.error("Error in revealAllClues:", error);
             }
         }
         
         // Function to update the adventure story text area
         function updateAdventureStory() {
-            const form = document.getElementById('storyForm');
-            const formData = new FormData(form);
-            let story = `我的名字叫 ${formData.get('myName') || '(未填寫)'}。\n`;
-            story += `今天我化身為一隻 ${drawnCards.character ? drawnCards.character.name : '(未選擇角色)'} (${drawnCards.character ? drawnCards.character.emoji : ''})。\n`;
-            story += `我找到的夥伴名字是：${formData.get('partnerNames') || '(未填寫)'}。\n`;
-            story += `他們的專業包含了：${formData.get('partnerExpertise') || '(未填寫)'}。\n`;
-            story += `我有信心一起尋找我們的棲地找到我們的家鄉完成今天的任務。\n\n`;
-
-            story += `${drawnCards.character ? drawnCards.character.name : '我'}有一些獨特的特性是：${formData.get('animalKnowledge') || '(未填寫)'}\n\n`;
-            
-            story += `我抽到的棲地卡(家園)是 ${drawnCards.habitat ? drawnCards.habitat.name : '(未選擇棲地)'} (${drawnCards.habitat ? drawnCards.habitat.emoji : ''})。\n`;
-            const isHometown = formData.get('isHometown');
-            story += `我覺得這可能 ${isHometown ? isHometown : '(未選擇)'} 我的家鄉。\n`;
-            story += `於是我與我們夥伴們一起討論，我們的家鄉應該(還)會有..... (說明有利於${drawnCards.character ? drawnCards.character.name : '(角色)'}生活居住的理由)：${formData.get('hometownDiscussion') || '(未填寫理由)'}\n`;
-            
-            story += `\n--- 棲地卡交換結果 ---\n`;
-            story += `我真正需要的棲地卡是：${document.getElementById('neededHabitatCard').value ? cardData.habitat.find(h => h.name === document.getElementById('neededHabitatCard').value)?.name || '(未選擇)' : '(未選擇)'}。\n`;
-            story += `我們的隊伍在交流後，總共取得了 ${formData.get('correctCardsObtained') || '0'} 張正確的棲地卡。\n`;
-            story += `與其他隊伍的交換詳情：\n`;
-            let exchangeMade = false;
-            for (let i = 1; i <= 4; i++) { 
-                const teamSelect = document.getElementById(`exchangeTeam${i}`);
-                const teamName = teamSelect.value ? cardData.character.find(c => c.name === teamSelect.value)?.name : '';
-                const count = formData.get(`exchangeCount${i}`);
-                if (teamName && count && parseInt(count) > 0) {
-                    story += `  - 我們跟 ${teamName} 隊伍交換了 ${count} 張棲地卡。\n`;
-                    exchangeMade = true;
+            try {
+                console.log("Updating adventure story...");
+                const form = document.getElementById('storyForm');
+                if (!form) {
+                    console.error("Story form not found for updateAdventureStory.");
+                    return;
                 }
-            }
-            if (!exchangeMade) {
-                story += `  (尚無詳細交換紀錄)\n`;
-            }
-            let thanksTo = [];
-            for (let i = 1; i <= 5; i++) {
-                const partnerName = formData.get(`finalThanksPartner${i}`);
-                if (partnerName) {
-                    thanksTo.push(partnerName);
+                const formData = new FormData(form);
+                let story = `我的名字叫 ${formData.get('myName') || '(未填寫)'}。\n`;
+                story += `今天我化身為一隻 ${drawnCards.character ? drawnCards.character.name : '(未選擇角色)'} (${drawnCards.character ? drawnCards.character.emoji : ''})。\n`;
+                story += `我找到的夥伴名字是：${formData.get('partnerNames') || '(未填寫)'}。\n`;
+                story += `他們的專業包含了：${formData.get('partnerExpertise') || '(未填寫)'}。\n`;
+                story += `我有信心一起尋找我們的棲地找到我們的家鄉完成今天的任務。\n\n`;
+
+                story += `${drawnCards.character ? drawnCards.character.name : '我'}有一些獨特的特性是：${formData.get('animalKnowledge') || '(未填寫)'}\n\n`;
+                
+                story += `我抽到的棲地卡(家園)是 ${drawnCards.habitat ? drawnCards.habitat.name : '(未選擇棲地)'} (${drawnCards.habitat ? drawnCards.habitat.emoji : ''})。\n`;
+                const isHometown = formData.get('isHometown');
+                story += `我覺得這可能 ${isHometown ? isHometown : '(未選擇)'} 我的家鄉。\n`;
+                story += `於是我與我們夥伴們一起討論，我們的家鄉應該(還)會有..... (說明有利於${drawnCards.character ? drawnCards.character.name : '(角色)'}生活居住的理由)：${formData.get('hometownDiscussion') || '(未填寫理由)'}\n`;
+                
+                story += `\n--- 棲地卡交換結果 ---\n`;
+                const neededHabitatCardEl = document.getElementById('neededHabitatCard');
+                story += `我真正需要的棲地卡是：${neededHabitatCardEl && neededHabitatCardEl.value ? cardData.habitat.find(h => h.name === neededHabitatCardEl.value)?.name || '(未選擇)' : '(未選擇)'}。\n`;
+                story += `我們的隊伍在交流後，總共取得了 ${formData.get('correctCardsObtained') || '0'} 張正確的棲地卡。\n`;
+                story += `與其他隊伍的交換詳情：\n`;
+                let exchangeMade = false;
+                for (let i = 1; i <= 4; i++) { 
+                    const teamSelect = document.getElementById(`exchangeTeam${i}`);
+                    const teamName = teamSelect && teamSelect.value ? cardData.character.find(c => c.name === teamSelect.value)?.name : '';
+                    const count = formData.get(`exchangeCount${i}`);
+                    if (teamName && count && parseInt(count) > 0) {
+                        story += `  - 我們跟 ${teamName} 隊伍交換了 ${count} 張棲地卡。\n`;
+                        exchangeMade = true;
+                    }
                 }
-            }
-            if (thanksTo.length > 0) {
-                story += `最終，謝謝 ${thanksTo.join('、')} 幫助我獲得了正確的棲地卡！\n`;
-            } else {
-                story += `最終，(沒有特別感謝的對象)幫助我獲得了正確的棲地卡！\n`;
-            }
+                if (!exchangeMade) {
+                    story += `  (尚無詳細交換紀錄)\n`;
+                }
+                let thanksTo = [];
+                for (let i = 1; i <= 5; i++) {
+                    const partnerName = formData.get(`finalThanksPartner${i}`);
+                    if (partnerName) {
+                        thanksTo.push(partnerName);
+                    }
+                }
+                if (thanksTo.length > 0) {
+                    story += `最終，謝謝 ${thanksTo.join('、')} 幫助我獲得了正確的棲地卡！\n`;
+                } else {
+                    story += `最終，(沒有特別感謝的對象)幫助我獲得了正確的棲地卡！\n`;
+                }
 
-            story += `我的其他夥伴也都找到正確的棲地卡了，現在我們要一起回到我們的家鄉去看看了!....\n\n`;
-            
-            const mysteryContextForStory = situationRevealed ? SITUATION_TEXT : "???";
+                story += `我的其他夥伴也都找到正確的棲地卡了，現在我們要一起回到我們的家鄉去看看了!....\n\n`;
+                
+                const mysteryContextForStory = situationRevealed ? SITUATION_TEXT : "???";
 
-            if (situationRevealed) {
-                story += `--- 緊急情境！ ---\n`;
-                story += `回到家鄉後，卻發現${SITUATION_TEXT} 我們必須找出線索！\n\n`;
-            }
-            
-            story += `為了解決${mysteryContextForStory}的謎團，\n`;
-            story += `我和組員夥伴推理出${mysteryContextForStory}的可能原因是：${formData.get('clueReasoning') || (situationRevealed && (formData.get('clueReasoning')||'').trim() === '' ? SITUATION_TEXT : '(未填寫)' )}\n`;
+                if (situationRevealed) {
+                    story += `--- 緊急情境！ ---\n`;
+                    story += `回到家鄉後，卻發現${SITUATION_TEXT} 我們必須找出線索！\n\n`;
+                }
+                
+                const clueReasoningVal = formData.get('clueReasoning') || '';
+                story += `為了解決${mysteryContextForStory}的謎團，\n`;
+                story += `我和組員夥伴推理出${mysteryContextForStory}的可能原因是：${clueReasoningVal || (situationRevealed && clueReasoningVal.trim() === '' ? SITUATION_TEXT : '(未填寫)' )}\n`;
 
-            story += `我抽到的線索是 ${drawnCards.clue ? drawnCards.clue.name + ' (' + drawnCards.clue.emoji + ')' : '(未選擇線索)'}。\n`; 
-            const isClueReason = formData.get('isClueReason');
-            story += `我認為這 ${isClueReason ? isClueReason : '(未選擇)'} ${document.getElementById('clueReasonSuffix').textContent.trim()}\n`; 
-            story += `${document.getElementById('clueFollowUpText').textContent.trim()}\n\n`; 
+                story += `我抽到的線索是 ${drawnCards.clue ? drawnCards.clue.name + ' (' + drawnCards.clue.emoji + ')' : '(未選擇線索)'}。\n`; 
+                const isClueReason = formData.get('isClueReason');
+                const clueReasonSuffixEl = document.getElementById('clueReasonSuffix');
+                const clueFollowUpTextEl = document.getElementById('clueFollowUpText');
+                story += `我認為這 ${isClueReason ? isClueReason : '(未選擇)'} ${clueReasonSuffixEl ? clueReasonSuffixEl.textContent.trim() : '我需要的線索，'}\n`; 
+                story += `${clueFollowUpTextEl ? clueFollowUpTextEl.textContent.trim() : '現在我們必須趕快找到更多的線索。'}\n\n`; 
 
-            if (allCluesRevealed) {
-                story += `指導老師揭露了所有可能的線索，我們發現：\n`;
-                cardData.clue.forEach(clue => {
-                    story += `- ${clue.name}: ${clue.description}\n`;
-                });
-                story += "\n";
-            }
+                if (allCluesRevealed) {
+                    story += `指導老師揭露了所有可能的線索，我們發現：\n`;
+                    cardData.clue.forEach(clue => {
+                        story += `- ${clue.name}: ${clue.description}\n`;
+                    });
+                    story += "\n";
+                }
 
-            story += `--- 尋找解方 ---\n`;
-            story += `這些線索都顯示人類高度活動造成的環境影響，因為我們居住的地方，與人類的活動範圍有高度的重疊，造成我們棲地的破壞；我們都是生態鏈中重要的一環，因此我們希望人類能夠對我們更友善。\n`;
-            story += `棲地的探索中，我和夥伴們一起討論得出結論是…….我們希望人類能夠 ${formData.get('resourceUtilizationLevel') || '(未選擇)'} 的利用資源，讓【生態服務可以永續】。\n`;
-            story += `*透過老師的教學我們更了解【生態服務】是人類的「生命支持系統」，為人類提供必要的生態系服務。，因此繼續討論在日常生活中，有哪些行為可以成為改變的解方。\n\n`;
-            
-            const desiredSolutionName = formData.get('desiredSolutionCard');
-            const test1UnEcoItem = formData.get('test1UnEcoItem') || '(未填寫)';
-            const test2UnEcoReason = formData.get('test2UnEcoReason') || '(未填寫)';
-            const test1Passed = test1UnEcoItem.length > 2;
-            const test2Passed = test2UnEcoReason.length > 5;
+                story += `--- 尋找解方 ---\n`;
+                story += `這些線索都顯示人類高度活動造成的環境影響，因為我們居住的地方，與人類的活動範圍有高度的重疊，造成我們棲地的破壞；我們都是生態鏈中重要的一環，因此我們希望人類能夠對我們更友善。\n`;
+                story += `棲地的探索中，我和夥伴們一起討論得出結論是…….我們希望人類能夠 ${formData.get('resourceUtilizationLevel') || '(未選擇)'} 的利用資源，讓【生態服務可以永續】。\n`;
+                story += `*透過老師的教學我們更了解【生態服務】是人類的「生命支持系統」，為人類提供必要的生態系服務。，因此繼續討論在日常生活中，有哪些行為可以成為改變的解方。\n\n`;
+                
+                const desiredSolutionName = formData.get('desiredSolutionCard');
+                const test1UnEcoItem = formData.get('test1UnEcoItem') || '(未填寫)';
+                const test2UnEcoReason = formData.get('test2UnEcoReason') || '(未填寫)';
+                const test1Passed = test1UnEcoItem.length > 2;
+                const test2Passed = test2UnEcoReason.length > 5;
 
-            if (desiredSolutionName) {
-                const selectedSolutionData = cardData.solution.find(s => s.name === desiredSolutionName);
-                story += `在日常生活中，有哪些行為可以成為改變的解方。經過反思，我想要努力達成的解方是：${selectedSolutionData ? selectedSolutionData.name + ' (' + selectedSolutionData.emoji + ')' : desiredSolutionName}。\n`;
-                if (test1Passed) {
-                    story += `考驗1 - 我的不環保行為/物品：${test1UnEcoItem}\n`;
-                    if (test2Passed) {
-                        story += `考驗2 - 不環保的理由：${test2UnEcoReason}\n`;
-                        story += `(已通過考驗，成功鎖定此解方！)\n`;
+                if (desiredSolutionName) {
+                    const selectedSolutionData = cardData.solution.find(s => s.name === desiredSolutionName);
+                    story += `在日常生活中，有哪些行為可以成為改變的解方。經過反思，我想要努力達成的解方是：${selectedSolutionData ? selectedSolutionData.name + ' (' + selectedSolutionData.emoji + ')' : desiredSolutionName}。\n`;
+                    if (test1Passed) {
+                        story += `考驗1 - 我的不環保行為/物品：${test1UnEcoItem}\n`;
+                        if (test2Passed) {
+                            story += `考驗2 - 不環保的理由：${test2UnEcoReason}\n`;
+                            story += `(已通過考驗，成功鎖定此解方！)\n`;
+                        } else {
+                            story += `(考驗2未完成或未通過)\n`;
+                        }
                     } else {
-                        story += `(考驗2未完成或未通過)\n`;
+                         story += `(考驗1未完成或未通過)\n`;
                     }
                 } else {
-                     story += `(考驗1未完成或未通過)\n`;
+                    story += `我隨機抽到的解方卡提示是：${drawnCards.solution ? drawnCards.solution.name + ' (' + drawnCards.solution.emoji + ')' : '(未抽取/選擇解方)'}。\n`;
                 }
-            } else {
-                story += `我隨機抽到的解方卡提示是：${drawnCards.solution ? drawnCards.solution.name + ' (' + drawnCards.solution.emoji + ')' : '(未抽取/選擇解方)'}。\n`;
+                
+                story += `針對我們的棲地(${drawnCards.character ? drawnCards.character.name : '(角色)'})受到破壞，我認為透過人類行為可以修復的解方是：${formData.get('habitatRepairSolution') || '(未填寫)'}\n`;
+                story += `我對這個解方的理解以及在生活中應用的案例是? ${formData.get('ecoChange') || '(未填寫)'}\n\n`;
+
+                story += `--- 我的反思與挑戰 ---\n`;
+                story += `這和我的角色家園有什麼關係？ ${formData.get('relationToHome') || '(未填寫)'}\n\n`;
+                story += `我們小組提出的合作方案是：${formData.get('groupPlan') || '(未填寫)'}\n`;
+                story += `我個人的行動承諾是：${formData.get('personalCommitment') || '(未填寫)'}\n`;
+
+                const adventureStoryEl = document.getElementById('adventureStory');
+                if(adventureStoryEl) adventureStoryEl.value = story;
+                console.log("Adventure story updated.");
+            } catch (error) {
+                console.error("Error in updateAdventureStory:", error);
             }
-            
-            story += `針對我們的棲地(${drawnCards.character ? drawnCards.character.name : '(角色)'})受到破壞，我認為透過人類行為可以修復的解方是：${formData.get('habitatRepairSolution') || '(未填寫)'}\n`;
-            story += `我對這個解方的理解以及在生活中應用的案例是? ${formData.get('ecoChange') || '(未填寫)'}\n\n`;
-
-            story += `--- 我的反思與挑戰 ---\n`;
-            story += `這和我的角色家園有什麼關係？ ${formData.get('relationToHome') || '(未填寫)'}\n\n`;
-            story += `我們小組提出的合作方案是：${formData.get('groupPlan') || '(未填寫)'}\n`;
-            story += `我個人的行動承諾是：${formData.get('personalCommitment') || '(未填寫)'}\n`;
-
-            document.getElementById('adventureStory').value = story;
         }
         
         // Download story functionality
-        document.getElementById('downloadStoryBtn').addEventListener('click', () => {
-            updateAdventureStory(); 
-            const storyText = document.getElementById('adventureStory').value;
-            const myName = document.getElementById('myName').value || '玩家';
-            
-            let htmlContent = `
-                <!DOCTYPE html>
-                <html lang="zh-TW">
-                <head>
-                    <meta charset="UTF-8">
-                    <title>${myName}的環境冒險故事</title>
-                    <style>
-                        body { font-family: Arial, sans-serif; line-height: 1.6; padding: 20px; background-color: #f4f4f4; color: #333; }
-                        .container { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-                        h1, h2 { color: #2c5282; }
-                        .card-section { margin-bottom: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 5px; background-color: #f9f9f9;}
-                        .card-section h3, .card-section h4 { margin-top: 0; font-size: 1.2em; }
-                        .card-section .emoji { font-size: 2em; margin-right: 10px; vertical-align: middle; }
-                        .story-content { white-space: pre-wrap; background-color: #e9f5ff; padding: 15px; border-radius: 5px; font-family: 'Courier New', Courier, monospace; }
-                        .form-data p { margin: 5px 0; }
-                        .form-data strong { color: #2c5282; min-width: 180px; display: inline-block;}
-                        .situation-active { background-color: #fee2e2 !important; border-color: #f87171 !important; }
-                        .situation-active h4 { color: #b91c1c !important; }
-                        .all-clues-section { background-color: #e0f2fe !important; border-color: #7dd3fc !important; }
-                        .all-clues-section h3 { color: #0369a1 !important; }
-                        .all-clues-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
-                        .clue-item { border: 1px solid #ccc; padding: 10px; border-radius: 4px; background: #fff; }
-                        .clue-item .emoji { font-size: 1.5em; }
-                    </style>
-                </head>
-                <body>
-                    <div class="container">
-                        <h1>${myName}的環境冒險故事</h1>
-            `;
+        const downloadStoryBtn = document.getElementById('downloadStoryBtn');
+        if (downloadStoryBtn) {
+            downloadStoryBtn.addEventListener('click', () => {
+                try {
+                    console.log("Download story button clicked.");
+                    updateAdventureStory(); 
+                    const adventureStoryEl = document.getElementById('adventureStory');
+                    const storyText = adventureStoryEl ? adventureStoryEl.value : "故事生成失敗。";
+                    const myNameEl = document.getElementById('myName');
+                    const myName = myNameEl ? myNameEl.value || '玩家' : '玩家';
+                    
+                    let htmlContent = `
+                        <!DOCTYPE html>
+                        <html lang="zh-TW">
+                        <head>
+                            <meta charset="UTF-8">
+                            <title>${myName}的環境冒險故事</title>
+                            <style>
+                                body { font-family: Arial, sans-serif; line-height: 1.6; padding: 20px; background-color: #f4f4f4; color: #333; }
+                                .container { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+                                h1, h2 { color: #2c5282; }
+                                .card-section { margin-bottom: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 5px; background-color: #f9f9f9;}
+                                .card-section h3, .card-section h4 { margin-top: 0; font-size: 1.2em; }
+                                .card-section .emoji { font-size: 2em; margin-right: 10px; vertical-align: middle; }
+                                .story-content { white-space: pre-wrap; background-color: #e9f5ff; padding: 15px; border-radius: 5px; font-family: 'Courier New', Courier, monospace; }
+                                .form-data p { margin: 5px 0; }
+                                .form-data strong { color: #2c5282; min-width: 180px; display: inline-block;}
+                                .situation-active { background-color: #fee2e2 !important; border-color: #f87171 !important; }
+                                .situation-active h4 { color: #b91c1c !important; }
+                                .all-clues-section { background-color: #e0f2fe !important; border-color: #7dd3fc !important; }
+                                .all-clues-section h3 { color: #0369a1 !important; }
+                                .all-clues-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
+                                .clue-item { border: 1px solid #ccc; padding: 10px; border-radius: 4px; background: #fff; }
+                                .clue-item .emoji { font-size: 1.5em; }
+                            </style>
+                        </head>
+                        <body>
+                            <div class="container">
+                                <h1>${myName}的環境冒險故事</h1>
+                    `;
 
-            htmlContent += `<h2>我抽到的卡片：</h2>`;
-            if (drawnCards.character) {
-                htmlContent += `
-                    <div class="card-section">
-                        <h3><span class="emoji">${drawnCards.character.emoji}</span>角色卡：${drawnCards.character.name}</h3>
-                        <p>${drawnCards.character.description}</p>
-                    </div>`;
-            }
-            if (drawnCards.habitat) {
-                htmlContent += `
-                    <div class="card-section">
-                        <h3><span class="emoji">${drawnCards.habitat.emoji}</span>棲地卡：${drawnCards.habitat.name}</h3>
-                        <p>${drawnCards.habitat.description}</p>
-                    </div>`;
-            }
-             if (situationRevealed) {
-                htmlContent += `
-                    <div class="card-section situation-active">
-                        <h4><span class="emoji">⚠️</span>緊急情境已揭露</h4>
-                        <p>${SITUATION_TEXT}</p>
-                    </div>`;
-            }
-            if (drawnCards.clue) {
-                 htmlContent += `
-                    <div class="card-section">
-                        <h3><span class="emoji">${drawnCards.clue.emoji}</span>我抽到的線索卡：${drawnCards.clue.name}</h3>
-                        <p>${drawnCards.clue.description}</p>
-                    </div>`;
-            }
+                    htmlContent += `<h2>我抽到的卡片：</h2>`;
+                    if (drawnCards.character) {
+                        htmlContent += `
+                            <div class="card-section">
+                                <h3><span class="emoji">${drawnCards.character.emoji}</span>角色卡：${drawnCards.character.name}</h3>
+                                <p>${drawnCards.character.description}</p>
+                            </div>`;
+                    }
+                    if (drawnCards.habitat) {
+                        htmlContent += `
+                            <div class="card-section">
+                                <h3><span class="emoji">${drawnCards.habitat.emoji}</span>棲地卡：${drawnCards.habitat.name}</h3>
+                                <p>${drawnCards.habitat.description}</p>
+                            </div>`;
+                    }
+                     if (situationRevealed) {
+                        htmlContent += `
+                            <div class="card-section situation-active">
+                                <h4><span class="emoji">⚠️</span>緊急情境已揭露</h4>
+                                <p>${SITUATION_TEXT}</p>
+                            </div>`;
+                    }
+                    if (drawnCards.clue) {
+                         htmlContent += `
+                            <div class="card-section">
+                                <h3><span class="emoji">${drawnCards.clue.emoji}</span>我抽到的線索卡：${drawnCards.clue.name}</h3>
+                                <p>${drawnCards.clue.description}</p>
+                            </div>`;
+                    }
 
-            if (allCluesRevealed) {
-                htmlContent += `<div class="card-section all-clues-section"><h3><span class="emoji">🔍</span>所有可能的線索：</h3><div class="all-clues-grid">`;
-                cardData.clue.forEach(clue => {
-                    htmlContent += `<div class="clue-item"><p class="emoji">${clue.emoji}</p><strong>${clue.name}</strong><p>${clue.description}</p></div>`;
-                });
-                htmlContent += `</div></div>`;
-            }
+                    if (allCluesRevealed) {
+                        htmlContent += `<div class="card-section all-clues-section"><h3><span class="emoji">🔍</span>所有可能的線索：</h3><div class="all-clues-grid">`;
+                        cardData.clue.forEach(clue => {
+                            htmlContent += `<div class="clue-item"><p class="emoji">${clue.emoji}</p><strong>${clue.name}</strong><p>${clue.description}</p></div>`;
+                        });
+                        htmlContent += `</div></div>`;
+                    }
 
-            const form = document.getElementById('storyForm');
-            const currentFormData = new FormData(form);
-            const desiredSolutionName = currentFormData.get('desiredSolutionCard');
-            const test1UnEcoItem = currentFormData.get('test1UnEcoItem');
-            const test2UnEcoReason = currentFormData.get('test2UnEcoReason');
-            const test1Passed = test1UnEcoItem && test1UnEcoItem.length > 2;
-            const test2Passed = test2UnEcoReason && test2UnEcoReason.length > 5;
+                    const form = document.getElementById('storyForm');
+                    const currentFormData = form ? new FormData(form) : new FormData(); // Ensure form is not null
+                    const desiredSolutionName = currentFormData.get('desiredSolutionCard');
+                    const test1UnEcoItem = currentFormData.get('test1UnEcoItem');
+                    const test2UnEcoReason = currentFormData.get('test2UnEcoReason');
+                    const test1Passed = test1UnEcoItem && test1UnEcoItem.length > 2;
+                    const test2Passed = test2UnEcoReason && test2UnEcoReason.length > 5;
 
-            if (desiredSolutionName && test1Passed && test2Passed) {
-                 const chosenSolutionData = cardData.solution.find(s => s.name === desiredSolutionName);
-                 if(chosenSolutionData){
+                    if (desiredSolutionName && test1Passed && test2Passed) {
+                         const chosenSolutionData = cardData.solution.find(s => s.name === desiredSolutionName);
+                         if(chosenSolutionData){
+                            htmlContent += `
+                            <div class="card-section" style="background-color: #d1fae5; border-color: #6ee7b7;">
+                                <h3><span class="emoji">${chosenSolutionData.emoji}</span>我努力達成的解方：${chosenSolutionData.name}</h3>
+                                <p>${chosenSolutionData.description}</p>
+                            </div>`;
+                         }
+                    } else if (drawnCards.solution) { 
+                        htmlContent += `
+                            <div class="card-section">
+                                <h3><span class="emoji">${drawnCards.solution.emoji}</span>我隨機抽到的解方卡提示：${drawnCards.solution.name}</h3>
+                                <p>${drawnCards.solution.description}</p>
+                            </div>`;
+                    }
+
+
+                    htmlContent += `<h2>我的故事與反思筆記：</h2>`;
+                    htmlContent += `<div class="form-data">`;
+                    
+                    const formElements = form ? form.elements : {};
+                    const formLabels = { 
+                        myName: "我的名字叫",
+                        partnerNames: "我找到的夥伴名字是",
+                        partnerExpertise: "他們的專業包含了",
+                        animalKnowledge: `${drawnCards.character ? drawnCards.character.name : '我'}有一些獨特的特性是 (寫下自己對${drawnCards.character ? drawnCards.character.name : '該動物'}的認識)`,
+                        isHometown: "我抽到的棲地卡是否為我的家鄉",
+                        hometownDiscussion: `於是我與我們夥伴們一起討論，我們的家鄉應該(還)會有..... (說明有利於${drawnCards.character ? drawnCards.character.name : '(角色)'}生活居住的理由)`,
+                        neededHabitatCard: "我真正需要的棲地卡是",
+                        correctCardsObtained: "我們隊伍換到的正確棲地卡數量",
+                        exchangeTeam1: "與隊伍1交換", exchangeCount1: "交換數量1",
+                        exchangeTeam2: "與隊伍2交換", exchangeCount2: "交換數量2",
+                        exchangeTeam3: "與隊伍3交換", exchangeCount3: "交換數量3",
+                        exchangeTeam4: "與隊伍4交換", exchangeCount4: "交換數量4",
+                        finalThanksPartner1: "感謝的夥伴/隊伍1", finalThanksPartner2: "感謝的夥伴/隊伍2",
+                        finalThanksPartner3: "感謝的夥伴/隊伍3", finalThanksPartner4: "感謝的夥伴/隊伍4",
+                        finalThanksPartner5: "感謝的夥伴/隊伍5",
+                        clueReasoning: `我和組員夥伴推理出 ${document.getElementById('situationContextForReasoning') ? document.getElementById('situationContextForReasoning').textContent : SITUATION_TEXT} 的可能原因是`,
+                        isClueReason: `我認為抽到的線索卡是否為原因`,
+                        resourceUtilizationLevel: "我們希望人類利用資源的程度",
+                        desiredSolutionCard: "我想要努力達成的解方是",
+                        test1UnEcoItem: "考驗1-不環保的物品/行為",
+                        test2UnEcoReason: "考驗2-不環保的理由",
+                        habitatRepairSolution: `針對我們的棲地(${drawnCards.character ? drawnCards.character.name : '(角色)'})受到破壞，我認為透過人類行為可以修復的解方是`,
+                        ecoChange: "我對這個解方的理解以及在生活中應用的案例是?",
+                        relationToHome: "這和我的角色家園有什麼關係？",
+                        groupPlan: "我們小組提出的合作方案是",
+                        personalCommitment: "我個人的行動承諾是"
+                    };
+                    
+                    for (const elementName in formLabels) {
+                        const element = formElements[elementName];
+                        if (element) {
+                            let value;
+                            if (element.constructor === RadioNodeList) { 
+                                const checkedRadio = document.querySelector(`input[name="${elementName}"]:checked`);
+                                value = checkedRadio ? checkedRadio.value : '(未選擇)';
+                            } else { 
+                                value = element.value || '(未填寫)';
+                            }
+
+                            if (element.tagName === 'SELECT' && element.value) {
+                                if (elementName === 'neededHabitatCard' && cardData.habitat.find(h => h.name === element.value)) {
+                                     value = cardData.habitat.find(h => h.name === element.value).name; 
+                                } else if (elementName.startsWith('exchangeTeam') && cardData.character.find(c => c.name === element.value)) {
+                                    value = cardData.character.find(c => c.name === element.value).name; 
+                                } else if (elementName === 'desiredSolutionCard' && cardData.solution.find(s => s.name === element.value)) {
+                                    const solData = cardData.solution.find(s => s.name === element.value);
+                                    value = `${solData.name} (${solData.emoji})`;
+                                }
+                            }
+
+                            if (value.trim() !== '' && value !== '(未填寫)' && value !== '(未選擇)' && !(elementName.startsWith('exchangeCount') && value === '0')) {
+                                if (elementName.startsWith('exchangeCount') && (!formElements[elementName.replace('Count', 'Team')] || !formElements[elementName.replace('Count', 'Team')].value)) {
+                                    continue; 
+                                }
+                                htmlContent += `<p><strong>${formLabels[elementName]}:</strong> ${value}</p>`;
+                            }
+                        }
+                    }
+                    
+                    htmlContent += `</div>`;
+                    htmlContent += `<h2>我的完整冒險故事：</h2>`;
+                    htmlContent += `<div class="story-content"><pre>${storyText}</pre></div>`;
                     htmlContent += `
-                    <div class="card-section" style="background-color: #d1fae5; border-color: #6ee7b7;">
-                        <h3><span class="emoji">${chosenSolutionData.emoji}</span>我努力達成的解方：${chosenSolutionData.name}</h3>
-                        <p>${chosenSolutionData.description}</p>
-                    </div>`;
-                 }
-            } else if (drawnCards.solution) { 
-                htmlContent += `
-                    <div class="card-section">
-                        <h3><span class="emoji">${drawnCards.solution.emoji}</span>我隨機抽到的解方卡提示：${drawnCards.solution.name}</h3>
-                        <p>${drawnCards.solution.description}</p>
-                    </div>`;
-            }
+                            </div>
+                        </body>
+                        </html>
+                    `;
 
-
-            htmlContent += `<h2>我的故事與反思筆記：</h2>`;
-            htmlContent += `<div class="form-data">`;
-            
-            const formElements = document.getElementById('storyForm').elements;
-            const formLabels = { 
-                myName: "我的名字叫",
-                partnerNames: "我找到的夥伴名字是",
-                partnerExpertise: "他們的專業包含了",
-                animalKnowledge: `${drawnCards.character ? drawnCards.character.name : '我'}有一些獨特的特性是 (寫下自己對${drawnCards.character ? drawnCards.character.name : '該動物'}的認識)`,
-                isHometown: "我抽到的棲地卡是否為我的家鄉",
-                hometownDiscussion: `於是我與我們夥伴們一起討論，我們的家鄉應該(還)會有..... (說明有利於${drawnCards.character ? drawnCards.character.name : '(角色)'}生活居住的理由)`,
-                neededHabitatCard: "我真正需要的棲地卡是",
-                correctCardsObtained: "我們隊伍換到的正確棲地卡數量",
-                exchangeTeam1: "與隊伍1交換", exchangeCount1: "交換數量1",
-                exchangeTeam2: "與隊伍2交換", exchangeCount2: "交換數量2",
-                exchangeTeam3: "與隊伍3交換", exchangeCount3: "交換數量3",
-                exchangeTeam4: "與隊伍4交換", exchangeCount4: "交換數量4",
-                finalThanksPartner1: "感謝的夥伴/隊伍1", finalThanksPartner2: "感謝的夥伴/隊伍2",
-                finalThanksPartner3: "感謝的夥伴/隊伍3", finalThanksPartner4: "感謝的夥伴/隊伍4",
-                finalThanksPartner5: "感謝的夥伴/隊伍5",
-                clueReasoning: `我和組員夥伴推理出 ${document.getElementById('situationContextForReasoning').textContent} 的可能原因是`,
-                isClueReason: `我認為抽到的線索卡是否為原因`,
-                resourceUtilizationLevel: "我們希望人類利用資源的程度",
-                desiredSolutionCard: "我想要努力達成的解方是",
-                test1UnEcoItem: "考驗1-不環保的物品/行為",
-                test2UnEcoReason: "考驗2-不環保的理由",
-                habitatRepairSolution: `針對我們的棲地(${drawnCards.character ? drawnCards.character.name : '(角色)'})受到破壞，我認為透過人類行為可以修復的解方是`,
-                ecoChange: "我對這個解方的理解以及在生活中應用的案例是?",
-                relationToHome: "這和我的角色家園有什麼關係？",
-                groupPlan: "我們小組提出的合作方案是",
-                personalCommitment: "我個人的行動承諾是"
-            };
-            
-            // Iterate over formLabels to ensure order and inclusion of specific fields
-            for (const elementName in formLabels) {
-                const element = formElements[elementName];
-                if (element) {
-                    let value;
-                    // Handle radio buttons
-                    if (element.constructor === RadioNodeList) { // Check if it's a NodeList of radio buttons
-                        const checkedRadio = document.querySelector(`input[name="${elementName}"]:checked`);
-                        value = checkedRadio ? checkedRadio.value : '(未選擇)';
-                    } else { // Handle other input types
-                        value = element.value || '(未填寫)';
-                    }
-
-                    // Special handling for select elements to get text content if needed, or just value
-                    if (element.tagName === 'SELECT' && element.value) {
-                        if (elementName === 'neededHabitatCard' && cardData.habitat.find(h => h.name === element.value)) {
-                             value = cardData.habitat.find(h => h.name === element.value).name; // Show name
-                        } else if (elementName.startsWith('exchangeTeam') && cardData.character.find(c => c.name === element.value)) {
-                            value = cardData.character.find(c => c.name === element.value).name; // Show name
-                        } else if (elementName === 'desiredSolutionCard' && cardData.solution.find(s => s.name === element.value)) {
-                            const solData = cardData.solution.find(s => s.name === element.value);
-                            value = `${solData.name} (${solData.emoji})`;
-                        }
-                        // else, value is already element.value
-                    }
-
-
-                    if (value.trim() !== '' && value !== '(未填寫)' && value !== '(未選擇)' && !(elementName.startsWith('exchangeCount') && value === '0')) {
-                         // Skip empty exchange counts unless it's explicitly filled
-                        if (elementName.startsWith('exchangeCount') && !formElements[elementName.replace('Count', 'Team')].value) {
-                            continue; // Skip count if team is not selected
-                        }
-                        htmlContent += `<p><strong>${formLabels[elementName]}:</strong> ${value}</p>`;
-                    }
+                    const blob = new Blob([htmlContent], { type: 'text/html' });
+                    const a = document.createElement('a');
+                    a.href = URL.createObjectURL(blob);
+                    a.download = `${myName}_環境冒險故事.html`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(a.href);
+                    console.log("Story downloaded.");
+                } catch (error) {
+                    console.error("Error in downloadStoryBtn event listener:", error);
                 }
-            }
-            
-            htmlContent += `</div>`;
-            
-            htmlContent += `<h2>我的完整冒險故事：</h2>`;
-            htmlContent += `<div class="story-content"><pre>${storyText}</pre></div>`;
-            
-            htmlContent += `
-                    </div>
-                </body>
-                </html>
-            `;
-
-            const blob = new Blob([htmlContent], { type: 'text/html' });
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = `${myName}_環境冒險故事.html`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(a.href);
-        });
-
-        // Initialize solution card dropdown (already done in HTML, this is a fallback or can be primary)
-        const desiredSolutionCardSelect = document.getElementById('desiredSolutionCard');
-        if (desiredSolutionCardSelect.options.length <= 1) { // Populate if not already populated
-            cardData.solution.forEach(sol => {
-                const option = document.createElement('option');
-                option.value = sol.name;
-                option.textContent = `${sol.name} (${sol.emoji})`;
-                desiredSolutionCardSelect.appendChild(option);
             });
+        } else {
+            console.warn("Download story button not found.");
+        }
+        
+
+        const desiredSolutionCardSelect = document.getElementById('desiredSolutionCard');
+        if (desiredSolutionCardSelect && desiredSolutionCardSelect.options.length <= 1) { 
+            try {
+                cardData.solution.forEach(sol => {
+                    const option = document.createElement('option');
+                    option.value = sol.name;
+                    option.textContent = `${sol.name} (${sol.emoji})`;
+                    desiredSolutionCardSelect.appendChild(option);
+                });
+            } catch (error) {
+                console.error("Error populating desiredSolutionCardSelect:", error);
+            }
         }
 
 
         // Event listener for the guide button
-        document.getElementById('guideButton').addEventListener('click', function() {
-            const guidePasswordError = document.getElementById('guidePasswordError');
-            guidePasswordError.classList.add('hidden'); // Hide error on new attempt
+        const guideButton = document.getElementById('guideButton');
+        if (guideButton) {
+            guideButton.addEventListener('click', function() {
+                try {
+                    const guidePasswordError = document.getElementById('guidePasswordError');
+                    if(guidePasswordError) guidePasswordError.classList.add('hidden'); 
 
-            const password = prompt("請輸入密碼以開啟教學指南：");
-            if (password === "CBDSOS") { // Example password
-                // Link to the Google Doc directly
-                const guideWindow = window.open("https://docs.google.com/document/d/1vuKAqQ-JTBdO7CYI8IJd5BdroPfNHMjO9unnKH4CNtA/edit?usp=sharing", "_blank");
-                 if (!guideWindow) {
-                    // Handle popup blocker
-                    const modalTitle = document.getElementById('modalTitle');
-                    const modalPasswordInput = document.getElementById('modalPasswordInput');
-                    const modalError = document.getElementById('modalError');
-                    const passwordModal = document.getElementById('passwordModal');
-                    
-                    modalTitle.textContent = "彈出視窗受阻";
-                    modalPasswordInput.classList.add('hidden');
-                    modalError.textContent = "您的瀏覽器可能已攔截彈出視窗。請允許此網站的彈出視窗，或手動複製以下連結開啟：https://docs.google.com/document/d/1vuKAqQ-JTBdO7CYI8IJd5BdroPfNHMjO9unnKH4CNtA/edit?usp=sharing";
-                    modalError.classList.remove('hidden');
-                    document.getElementById('modalSubmitButton').classList.add('hidden');
-                    document.getElementById('modalCancelButton').textContent = "關閉";
-                    passwordModal.classList.remove('hidden');
+                    const password = prompt("請輸入密碼以開啟教學指南：");
+                    if (password === "CBDSOS") { 
+                        const guideWindow = window.open("https://docs.google.com/document/d/1vuKAqQ-JTBdO7CYI8IJd5BdroPfNHMjO9unnKH4CNtA/edit?usp=sharing", "_blank");
+                         if (!guideWindow) {
+                            const modalTitle = document.getElementById('modalTitle');
+                            const modalPasswordInput = document.getElementById('modalPasswordInput');
+                            const modalError = document.getElementById('modalError');
+                            const passwordModal = document.getElementById('passwordModal');
+                            const modalSubmitButton = document.getElementById('modalSubmitButton');
+                            const modalCancelButton = document.getElementById('modalCancelButton');
+                            
+                            if(modalTitle) modalTitle.textContent = "彈出視窗受阻";
+                            if(modalPasswordInput) modalPasswordInput.classList.add('hidden');
+                            if(modalError) {
+                                modalError.textContent = "您的瀏覽器可能已攔截彈出視窗。請允許此網站的彈出視窗，或手動複製以下連結開啟：https://docs.google.com/document/d/1vuKAqQ-JTBdO7CYI8IJd5BdroPfNHMjO9unnKH4CNtA/edit?usp=sharing";
+                                modalError.classList.remove('hidden');
+                            }
+                            if(modalSubmitButton) modalSubmitButton.classList.add('hidden');
+                            if(modalCancelButton) modalCancelButton.textContent = "關閉";
+                            if(passwordModal) passwordModal.classList.remove('hidden');
+                        }
+                    } else if (password !== null) { 
+                        if(guidePasswordError) guidePasswordError.classList.remove('hidden');
+                    }
+                } catch (error) {
+                    console.error("Error in guideButton event listener:", error);
                 }
-            } else if (password !== null) { // User entered something but it was wrong
-                guidePasswordError.classList.remove('hidden');
-            }
-        });
-
-        // --- Start of integrated JavaScript.js content ---
-        function populateHabitatOptions() {
-            const selectElement = document.getElementById('neededHabitatCard');
-            if (!selectElement) return;
-            // Clear existing options except the first one ("-- 請選擇棲地卡 --")
-            while (selectElement.options.length > 1) {
-                selectElement.remove(1);
-            }
-            cardData.habitat.forEach(habitat => {
-                const option = document.createElement('option');
-                option.value = habitat.name; // Store the name as value for easier lookup
-                option.textContent = `${habitat.name} (${habitat.emoji})`;
-                selectElement.appendChild(option);
             });
+        } else {
+            console.warn("Guide button not found.");
         }
+        
 
-        function populateCharacterTeamOptions() {
-            const teamSelects = [
-                document.getElementById('exchangeTeam1'),
-                document.getElementById('exchangeTeam2'),
-                document.getElementById('exchangeTeam3'),
-                document.getElementById('exchangeTeam4')
-            ];
-            teamSelects.forEach(selectElement => {
-                if (!selectElement) return;
+        function populateHabitatOptions() {
+            try {
+                const selectElement = document.getElementById('neededHabitatCard');
+                if (!selectElement) {
+                    console.warn('neededHabitatCard select element not found.');
+                    return;
+                }
                 while (selectElement.options.length > 1) {
                     selectElement.remove(1);
                 }
-                cardData.character.forEach(character => {
+                cardData.habitat.forEach(habitat => {
                     const option = document.createElement('option');
-                    option.value = character.name; // Store name as value
-                    option.textContent = `${character.name} (${character.emoji})`;
+                    option.value = habitat.name; 
+                    option.textContent = `${habitat.name} (${habitat.emoji})`;
                     selectElement.appendChild(option);
                 });
-            });
+            } catch (error) {
+                console.error("Error in populateHabitatOptions:", error);
+            }
         }
 
-        // Initialize event listeners for tests and other dynamic elements on window load
-        window.onload = function() {
-            populateHabitatOptions();
-            populateCharacterTeamOptions(); 
-            // populateDesiredSolutionOptions(); // This is already handled by the loop in HTML, so commenting out to avoid duplication.
+        function populateCharacterTeamOptions() {
+            try {
+                const teamSelects = [
+                    document.getElementById('exchangeTeam1'),
+                    document.getElementById('exchangeTeam2'),
+                    document.getElementById('exchangeTeam3'),
+                    document.getElementById('exchangeTeam4')
+                ];
+                teamSelects.forEach((selectElement, index) => {
+                    if (!selectElement) {
+                        console.warn(`exchangeTeam${index + 1} select element not found.`);
+                        return;
+                    }
+                    while (selectElement.options.length > 1) {
+                        selectElement.remove(1);
+                    }
+                    cardData.character.forEach(character => {
+                        const option = document.createElement('option');
+                        option.value = character.name; 
+                        option.textContent = `${character.name} (${character.emoji})`;
+                        selectElement.appendChild(option);
+                    });
+                });
+            } catch (error) {
+                console.error("Error in populateCharacterTeamOptions:", error);
+            }
+        }
 
-            const desiredSolutionSelect = document.getElementById('desiredSolutionCard');
+        window.onload = function() {
+            console.log("Window onload event triggered.");
+            try {
+                console.log("Attempting to populate habitat options...");
+                populateHabitatOptions();
+                console.log("Habitat options populated.");
+            } catch (e) {
+                console.error("Error during populateHabitatOptions in onload:", e);
+            }
+
+            try {
+                console.log("Attempting to populate character team options...");
+                populateCharacterTeamOptions(); 
+                console.log("Character team options populated.");
+            } catch (e) {
+                console.error("Error during populateCharacterTeamOptions in onload:", e);
+            }
+
+            const desiredSolutionSelectLocal = document.getElementById('desiredSolutionCard');
             const test1Section = document.getElementById('test1Section');
             const test1Input = document.getElementById('test1UnEcoItem');
             const test1Error = document.getElementById('test1UnEcoItemError');
@@ -1071,83 +1172,130 @@
             const test2Error = document.getElementById('test2UnEcoReasonError');
             const solutionConfirmation = document.getElementById('solutionConfirmationMessage');
 
-            if (desiredSolutionSelect) {
-                desiredSolutionSelect.addEventListener('change', function() {
-                    if (this.value) {
-                        test1Section.classList.remove('hidden');
-                        test2Section.classList.add('hidden'); // Hide test2 initially
-                        solutionConfirmation.classList.add('hidden');
-                        test1Input.value = ''; 
-                        test2Input.value = '';
-                        test1Error.classList.add('hidden');
-                        test2Error.classList.add('hidden');
-                    } else {
-                        test1Section.classList.add('hidden');
-                        test2Section.classList.add('hidden');
-                        solutionConfirmation.classList.add('hidden');
-                    }
-                });
+            if (desiredSolutionSelectLocal) {
+                try {
+                    desiredSolutionSelectLocal.addEventListener('change', function() {
+                        if(!test1Section || !test2Section || !solutionConfirmation || !test1Input || !test2Input || !test1Error || !test2Error) {
+                            console.error("One or more elements for solution test are missing.");
+                            return;
+                        }
+                        if (this.value) {
+                            test1Section.classList.remove('hidden');
+                            test2Section.classList.add('hidden'); 
+                            solutionConfirmation.classList.add('hidden');
+                            test1Input.value = ''; 
+                            test2Input.value = '';
+                            test1Error.classList.add('hidden');
+                            test2Error.classList.add('hidden');
+                        } else {
+                            test1Section.classList.add('hidden');
+                            test2Section.classList.add('hidden');
+                            solutionConfirmation.classList.add('hidden');
+                        }
+                    });
+                    console.log("Event listener for desiredSolutionSelect added.");
+                } catch (e) {
+                    console.error("Error adding event listener to desiredSolutionSelect:", e);
+                }
+            } else {
+                 console.warn("desiredSolutionCard select not found for event listener attachment.");
             }
 
             if (test1Input) {
-                test1Input.addEventListener('input', function() {
-                    if (this.value.length > 2) {
-                        test2Section.classList.remove('hidden');
-                        test1Error.classList.add('hidden');
-                    } else {
-                        test2Section.classList.add('hidden'); // Keep test2 hidden if test1 is not valid
-                        solutionConfirmation.classList.add('hidden'); // Also hide confirmation
-                        if (this.value.length > 0 && this.value.length <=2) { // Show error only if there's some input but not enough
-                             test1Error.classList.remove('hidden');
-                        } else {
-                            test1Error.classList.add('hidden');
+                try {
+                    test1Input.addEventListener('input', function() {
+                         if(!test2Section || !solutionConfirmation || !test1Error) {
+                            console.error("One or more elements for test1Input listener are missing.");
+                            return;
                         }
-                    }
-                });
+                        if (this.value.length > 2) {
+                            test2Section.classList.remove('hidden');
+                            test1Error.classList.add('hidden');
+                        } else {
+                            test2Section.classList.add('hidden'); 
+                            solutionConfirmation.classList.add('hidden'); 
+                            if (this.value.length > 0 && this.value.length <=2) { 
+                                 test1Error.classList.remove('hidden');
+                            } else {
+                                test1Error.classList.add('hidden');
+                            }
+                        }
+                    });
+                    console.log("Event listener for test1Input added.");
+                } catch (e) {
+                    console.error("Error adding event listener to test1Input:", e);
+                }
+            } else {
+                console.warn("test1UnEcoItem input not found for event listener attachment.");
             }
 
             if (test2Input) {
-                test2Input.addEventListener('input', function() {
-                    if (this.value.length > 5) {
-                        solutionConfirmation.classList.remove('hidden');
-                        const selectedSolutionText = desiredSolutionSelect.options[desiredSolutionSelect.selectedIndex].text;
-                        solutionConfirmation.textContent = `恭喜！您已通過考驗，成功鎖定解方：${selectedSolutionText}！`;
-                        test2Error.classList.add('hidden');
-                    } else {
-                        solutionConfirmation.classList.add('hidden');
-                         if (this.value.length > 0 && this.value.length <=5) { // Show error only if there's some input but not enough
-                            test2Error.classList.remove('hidden');
-                        } else {
-                            test2Error.classList.add('hidden');
+                 try {
+                    test2Input.addEventListener('input', function() {
+                        if(!solutionConfirmation || !test2Error || !desiredSolutionSelectLocal) {
+                             console.error("One or more elements for test2Input listener are missing.");
+                            return;
                         }
-                    }
-                });
+                        if (this.value.length > 5) {
+                            solutionConfirmation.classList.remove('hidden');
+                            const selectedSolutionText = desiredSolutionSelectLocal.options[desiredSolutionSelectLocal.selectedIndex].text;
+                            solutionConfirmation.textContent = `恭喜！您已通過考驗，成功鎖定解方：${selectedSolutionText}！`;
+                            test2Error.classList.add('hidden');
+                        } else {
+                            solutionConfirmation.classList.add('hidden');
+                             if (this.value.length > 0 && this.value.length <=5) { 
+                                test2Error.classList.remove('hidden');
+                            } else {
+                                test2Error.classList.add('hidden');
+                            }
+                        }
+                    });
+                    console.log("Event listener for test2Input added.");
+                } catch (e) {
+                    console.error("Error adding event listener to test2Input:", e);
+                }
+            } else {
+                console.warn("test2UnEcoReason input not found for event listener attachment.");
             }
 
-            // Modal close functionality (generic, if needed for the passwordModal or others)
             const passwordModal = document.getElementById('passwordModal');
             const modalCancelButton = document.getElementById('modalCancelButton');
             if (modalCancelButton && passwordModal) {
-                modalCancelButton.onclick = function() {
-                    passwordModal.classList.add('hidden');
-                    // Reset modal for next use if it was for guide link popup issue
-                    document.getElementById('modalTitle').textContent = "輸入密碼";
-                    document.getElementById('modalPasswordInput').classList.remove('hidden');
-                    document.getElementById('modalError').classList.add('hidden');
-                    document.getElementById('modalSubmitButton').classList.remove('hidden');
-                    document.getElementById('modalCancelButton').textContent = "取消";
+                try {
+                    modalCancelButton.onclick = function() {
+                        passwordModal.classList.add('hidden');
+                        const modalTitle = document.getElementById('modalTitle');
+                        const modalPasswordInput = document.getElementById('modalPasswordInput');
+                        const modalError = document.getElementById('modalError');
+                        const modalSubmitButton = document.getElementById('modalSubmitButton');
 
+                        if(modalTitle) modalTitle.textContent = "輸入密碼";
+                        if(modalPasswordInput) modalPasswordInput.classList.remove('hidden');
+                        if(modalError) modalError.classList.add('hidden');
+                        if(modalSubmitButton) modalSubmitButton.classList.remove('hidden');
+                        if(modalCancelButton) modalCancelButton.textContent = "取消";
+                    }
+                    console.log("Event listener for modalCancelButton added.");
+                } catch (e) {
+                    console.error("Error setting up modalCancelButton onclick:", e);
                 }
+            } else {
+                if (!modalCancelButton) console.warn("modalCancelButton not found.");
+                if (!passwordModal) console.warn("passwordModal not found.");
             }
-             // Close modal if user clicks outside of it
-            window.onclick = function(event) {
-                if (event.target == passwordModal) {
-                    passwordModal.classList.add('hidden');
+            
+            try {
+                window.onclick = function(event) {
+                    if (passwordModal && event.target == passwordModal) {
+                        passwordModal.classList.add('hidden');
+                    }
                 }
+                console.log("Global onclick listener for modal added.");
+            } catch (e) {
+                console.error("Error setting up global onclick listener for modal:", e);
             }
+            console.log("Window onload completed.");
         };
-        // --- End of integrated JavaScript.js content ---
-
     </script>
 </body>
 </html>
