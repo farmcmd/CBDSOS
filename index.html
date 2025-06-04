@@ -874,8 +874,9 @@
                                     padding: 15px; 
                                     border-radius: 5px; 
                                     font-family: 'Courier New', Courier, monospace; 
-                                    overflow-wrap: break-word; /* Added for long word wrapping */
-                                    word-wrap: break-word; /* Older browsers compatibility */
+                                    overflow-wrap: break-word;
+                                    word-wrap: break-word; 
+                                    word-break: break-all; /* More aggressive breaking */
                                 }
                                 .form-data p { margin: 5px 0; }
                                 .form-data strong { color: #2c5282; min-width: 180px; display: inline-block;}
