@@ -1,0 +1,1260 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>生態棲地破冰活動</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0fdf4; /* Light green background */
+        }
+        .card-container {
+            perspective: 1000px;
+            cursor: pointer;
+        }
+        .card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+        .card-container.flipped .card-inner {
+            transform: rotateY(180deg);
+        }
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 16px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .card-front {
+            background-color: #60a5fa; /* Blue */
+            color: white;
+        }
+        .card-back {
+            background-color: #fef9c3; /* Light yellow */
+            color: #374151; /* Dark gray */
+            transform: rotateY(180deg);
+            overflow-y: auto; /* For long text */
+        }
+        .drawn-card-display, .all-clues-card-display {
+            background-color: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .drawn-card-display h3, .all-clues-card-display h4 {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #1e40af; /* Dark blue */
+        }
+        .drawn-card-display .emoji, .all-clues-card-display .emoji {
+            font-size: 2.5rem;
+            margin-bottom: 8px;
+        }
+        .all-clues-card-display .emoji {
+            font-size: 1.5rem; /* Smaller emoji for all clues list */
+        }
+         .all-clues-card-display p {
+            font-size: 0.85rem;
+        }
+        textarea, select {
+            min-height: 100px;
+        }
+        select {
+             min-height: auto;
+             height: 42px;
+        }
+        .exchange-select {
+            flex-grow: 1;
+            min-width: 150px;
+        }
+        .thank-input {
+            width: auto;
+            min-width: 100px;
+            max-width: 150px;
+        }
+        .card-back::-webkit-scrollbar {
+            width: 8px;
+        }
+        .card-back::-webkit-scrollbar-track {
+            background: #fef9c3; /* Match card background */
+            border-radius: 10px;
+        }
+        .card-back::-webkit-scrollbar-thumb {
+            background: #a3a3a3; /* Neutral gray */
+            border-radius: 10px;
+        }
+        .card-back::-webkit-scrollbar-thumb:hover {
+            background: #737373; /* Darker gray */
+        }
+        .test-section {
+            margin-top: 1rem;
+            padding: 1rem;
+            background-color: #f9fafb; 
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+        }
+        /* Modal Styles */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 1000; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto; /* 15% from the top and centered */
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%; /* Could be more or less, depending on screen size */
+            max-width: 500px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
+        }
+        .close-button {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close-button:hover,
+        .close-button:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body class="bg-green-50 text-gray-800 p-4 md:p-8">
+    <div class="container mx-auto max-w-5xl">
+        <header class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-green-700">生態棲地破冰活動</h1>
+            <p class="text-lg text-green-600 mt-2">透過抽卡與故事，探索生態的奧秘！</p>
+        </header>
+
+        <!-- Card Drawing Section -->
+        <section class="mb-8">
+            <h2 class="text-2xl font-semibold text-green-700 mb-4">抽卡區</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Character Card -->
+                <div id="characterCardContainer" class="card-container h-64" onclick="drawCard('character')">
+                    <div class="card-inner">
+                        <div class="card-face card-front">
+                            <p class="text-xl font-semibold">抽角色卡</p>
+                            <p class="text-3xl mt-2">👤</p>
+                        </div>
+                        <div class="card-face card-back" id="characterCardBack">
+                            <!-- Content injected by JS -->
+                        </div>
+                    </div>
+                </div>
+                <!-- Habitat Card -->
+                <div id="habitatCardContainer" class="card-container h-64" onclick="drawCard('habitat')">
+                    <div class="card-inner">
+                        <div class="card-face card-front">
+                            <p class="text-xl font-semibold">抽棲地卡</p>
+                            <p class="text-3xl mt-2">🏞️</p>
+                        </div>
+                        <div class="card-face card-back" id="habitatCardBack">
+                            <!-- Content injected by JS -->
+                        </div>
+                    </div>
+                </div>
+                <!-- Clue Card -->
+                <div id="clueCardContainer" class="card-container h-64" onclick="drawCard('clue')">
+                    <div class="card-inner">
+                        <div class="card-face card-front">
+                            <p class="text-xl font-semibold">抽線索卡</p>
+                            <p class="text-3xl mt-2">🔍</p>
+                        </div>
+                        <div class="card-face card-back" id="clueCardBack">
+                            <!-- Content injected by JS -->
+                        </div>
+                    </div>
+                </div>
+                <!-- Solution Card -->
+                <div id="solutionCardContainer" class="card-container h-64" onclick="drawCard('solution')">
+                    <div class="card-inner">
+                        <div class="card-face card-front">
+                            <p class="text-xl font-semibold">抽解方卡</p>
+                            <p class="text-3xl mt-2">💡</p>
+                        </div>
+                        <div class="card-face card-back" id="solutionCardBack">
+                            <!-- Content injected by JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- My Drawn Cards Section -->
+        <section class="mb-8 p-6 bg-white rounded-xl shadow-lg">
+            <h2 class="text-2xl font-semibold text-green-700 mb-4">我的卡牌</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div id="drawnCharacterCard" class="drawn-card-display"><h3>角色卡：</h3><p>尚未抽取</p></div>
+                <div id="drawnHabitatCard" class="drawn-card-display"><h3>棲地卡：</h3><p>尚未抽取</p></div>
+                <div id="drawnClueCard" class="drawn-card-display"><h3>線索卡：</h3><p>尚未抽取</p></div>
+                <div id="drawnSolutionCard" class="drawn-card-display"><h3>解方卡：</h3><p>尚未抽取</p></div>
+            </div>
+        </section>
+
+        <!-- Story Structure Note Section -->
+        <section class="mb-8 p-6 bg-white rounded-xl shadow-lg">
+            <div class="flex justify-between items-center mb-6">
+                 <h2 class="text-2xl font-semibold text-green-700">故事架構筆記 <span class="text-sm text-gray-600 italic ml-2">*跟隨指導老師串聯您探索生態的故事</span></h2>
+                <button id="guideButton" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded inline-flex items-center">
+                    <svg class="fill-current w-4 h-4 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M18 2H6c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 4h5v8l-2.5-1.5L6 12V4z"/></svg>
+                    <span>指導老師教學指南</span>
+                </button>
+            </div>
+            <form id="storyForm" class="space-y-6">
+                <div>
+                    <label for="myName" class="block text-sm font-medium text-gray-700">我的名字叫 (自我介紹):</label>
+                    <input type="text" id="myName" name="myName" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2">
+                </div>
+                <div>
+                    <p class="block text-sm font-medium text-gray-700">我今天是一隻: <span id="storyCharacterName" class="font-semibold"></span></p>
+                </div>
+                <div>
+                    <label for="partnerNames" class="block text-sm font-medium text-gray-700">我找到的夥伴名字是：</label>
+                    <input type="text" id="partnerNames" name="partnerNames" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2" placeholder="例如：小花、阿明">
+                </div>
+                 <div>
+                    <label for="partnerExpertise" class="block text-sm font-medium text-gray-700">他們的專業包含了：</label>
+                    <input type="text" id="partnerExpertise" name="partnerExpertise" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2" placeholder="例如：植物學、動物行為、環境監測">
+                </div>
+                <p class="text-sm text-gray-600 mt-1 mb-3">我有信心一起尋找我們的棲地找到我們的家鄉完成今天的任務。</p>
+
+                <div>
+                    <label for="animalKnowledge" id="animalKnowledgeLabel" class="block text-sm font-medium text-gray-700">我有一些獨特的特性是 (寫下自己對該動物的認識):</label>
+                    <textarea id="animalKnowledge" name="animalKnowledge" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2"></textarea>
+                </div>
+                
+                <div>
+                    <p class="block text-sm font-medium text-gray-700">我抽到的棲地卡(家園)是：<span id="storyHabitatName" class="font-semibold"></span></p>
+                    <div class="mt-2">
+                        <span class="text-sm font-medium text-gray-700">我覺得這可能：</span>
+                        <label class="inline-flex items-center ml-2">
+                            <input type="radio" name="isHometown" value="是" class="form-radio text-indigo-600 focus:ring-indigo-500">
+                            <span class="ml-1 text-sm text-gray-700">是</span>
+                        </label>
+                        <label class="inline-flex items-center ml-2">
+                            <input type="radio" name="isHometown" value="不是" class="form-radio text-indigo-600 focus:ring-indigo-500">
+                            <span class="ml-1 text-sm text-gray-700">不是</span>
+                        </label>
+                        <span class="text-sm font-medium text-gray-700"> 我的家鄉。</span>
+                    </div>
+                </div>
+                <div>
+                    <label for="hometownDiscussion" id="hometownDiscussionLabel" class="block text-sm font-medium text-gray-700">於是我與我們夥伴們一起討論，我們的家鄉應該(還)會有..... (說明有利於<span id="hometownCharacterNameDisplay" class="font-bold text-indigo-600">(角色)</span>生活居住的理由):</label>
+                    <textarea id="hometownDiscussion" name="hometownDiscussion" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2" placeholder="例如：更多樣的食物來源、更隱蔽的巢穴..."></textarea>
+                </div>
+                
+                <div class="mt-4 pt-4 border-t border-gray-200">
+                    <h4 class="text-md font-semibold text-gray-800 mb-3">棲地卡交換結果紀錄：</h4>
+                    <div>
+                        <label for="neededHabitatCard" class="block text-sm font-medium text-gray-700">我真正需要的棲地卡是：</label>
+                        <select id="neededHabitatCard" name="neededHabitatCard" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2">
+                            <option value="">-- 請選擇棲地卡 --</option>
+                        </select>
+                    </div>
+                    <div class="mt-3">
+                        <label for="correctCardsObtained" class="block text-sm font-medium text-gray-700">我們的隊伍跟其他的隊伍交流後，總共換到了幾張正確的棲地卡：</label>
+                        <input type="number" id="correctCardsObtained" name="correctCardsObtained" min="0" class="mt-1 inline-block w-24 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2" placeholder="數量">
+                        <span class="text-sm text-gray-600"> 張</span>
+                    </div>
+                    <div class="space-y-2 mt-3">
+                        <p class="text-sm font-medium text-gray-700">與其他隊伍的交換詳情：</p>
+                        <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
+                            <span class="text-sm text-gray-700">我們跟</span>
+                            <select name="exchangeTeam1" class="exchange-select rounded-md border-gray-300 shadow-sm p-1 sm:text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                <option value="">-- 選擇隊伍(角色) --</option>
+                            </select>
+                            <span class="text-sm text-gray-700">隊伍交換了</span>
+                            <input type="number" name="exchangeCount1" min="0" class="w-20 rounded-md border-gray-300 shadow-sm p-1 sm:text-sm" placeholder="數量">
+                            <span class="text-sm text-gray-700">張。</span>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
+                            <span class="text-sm text-gray-700">我們跟</span>
+                             <select name="exchangeTeam2" class="exchange-select rounded-md border-gray-300 shadow-sm p-1 sm:text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                <option value="">-- 選擇隊伍(角色) --</option>
+                            </select>
+                            <span class="text-sm text-gray-700">隊伍交換了</span>
+                            <input type="number" name="exchangeCount2" min="0" class="w-20 rounded-md border-gray-300 shadow-sm p-1 sm:text-sm" placeholder="數量">
+                            <span class="text-sm text-gray-700">張。</span>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
+                            <span class="text-sm text-gray-700">我們跟</span>
+                            <select name="exchangeTeam3" class="exchange-select rounded-md border-gray-300 shadow-sm p-1 sm:text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                <option value="">-- 選擇隊伍(角色) --</option>
+                            </select>
+                            <span class="text-sm text-gray-700">隊伍交換了</span>
+                            <input type="number" name="exchangeCount3" min="0" class="w-20 rounded-md border-gray-300 shadow-sm p-1 sm:text-sm" placeholder="數量">
+                            <span class="text-sm text-gray-700">張。</span>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
+                            <span class="text-sm text-gray-700">我們跟</span>
+                            <select name="exchangeTeam4" class="exchange-select rounded-md border-gray-300 shadow-sm p-1 sm:text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                <option value="">-- 選擇隊伍(角色) --</option>
+                            </select>
+                            <span class="text-sm text-gray-700">隊伍交換了</span>
+                            <input type="number" name="exchangeCount4" min="0" class="w-20 rounded-md border-gray-300 shadow-sm p-1 sm:text-sm" placeholder="數量">
+                            <span class="text-sm text-gray-700">張。</span>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <span class="text-sm font-medium text-gray-700">謝謝</span>
+                        <input type="text" name="finalThanksPartner1" class="thank-input mt-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2" placeholder="夥伴/隊伍1">
+                        <input type="text" name="finalThanksPartner2" class="thank-input mt-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2" placeholder="夥伴/隊伍2">
+                        <input type="text" name="finalThanksPartner3" class="thank-input mt-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2" placeholder="夥伴/隊伍3">
+                        <input type="text" name="finalThanksPartner4" class="thank-input mt-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2" placeholder="夥伴/隊伍4">
+                        <input type="text" name="finalThanksPartner5" class="thank-input mt-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2" placeholder="夥伴/隊伍5">
+                        <span class="text-sm font-medium text-gray-700"> 幫我找到了正確的棲地卡！</span>
+                    </div>
+                </div>
+
+                <p class="text-sm text-gray-600 mt-4 mb-3">我的其他夥伴也都找到正確的棲地卡了，現在我們要一起回到我們的家鄉去看看了!....</p>
+                
+                <!-- Situation Card Section -->
+                <div id="situationSection" class="my-6 p-6 bg-yellow-100 rounded-xl shadow-lg">
+                    <h3 class="text-xl font-semibold text-yellow-700 mb-4">突發情境！</h3>
+                    <div id="passwordPrompt">
+                        <label for="situationPassword" class="block text-sm font-medium text-gray-700">指導老師請提供密碼以揭露情境：</label>
+                        <input type="password" id="situationPassword" name="situationPassword" class="mt-1 block w-full md:w-1/2 rounded-md border-gray-300 shadow-sm focus:border-yellow-500 focus:ring-yellow-500 sm:text-sm p-2">
+                        <button type="button" onclick="revealSituation()" class="mt-2 bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-lg shadow transition duration-150 ease-in-out">
+                            揭露情境
+                        </button>
+                        <p id="passwordError" class="text-red-500 text-sm mt-1 hidden">密碼錯誤！請確認後再試一次。</p>
+                    </div>
+                    <div id="situationCardDisplay" class="hidden mt-4 p-4 bg-red-100 border border-red-300 text-red-700 rounded-md">
+                        <h4 class="text-lg font-bold mb-2 text-center">⚠️ 緊急情境！ ⚠️</h4>
+                        <p id="situationText" class="text-md text-center">家鄉的同伴都不見了! 他們去了哪裡？<br>請玩家們一起找出線索！</p>
+                    </div>
+                </div>
+
+                <div>
+                    <label for="clueReasoning" class="block text-sm font-medium text-gray-700">
+                        為了解決<span id="situationContextForClue" class="font-bold text-red-600">???</span>的謎團，<br>
+                        我和組員夥伴推理出<span id="situationContextForReasoning" class="font-bold text-red-600">???</span>的可能原因是：
+                    </label>
+                    <textarea id="clueReasoning" name="clueReasoning" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2"></textarea>
+                </div>
+                <div>
+                    <p class="block text-sm font-medium text-gray-700">我抽到的線索是：<span id="storyClueNameForReasoning" class="font-semibold"></span></p>
+                     <div class="mt-2">
+                        <span class="text-sm font-medium text-gray-700">我認為這：</span>
+                        <label class="inline-flex items-center ml-2">
+                            <input type="radio" name="isClueReason" value="是" class="form-radio text-indigo-600 focus:ring-indigo-500">
+                            <span class="ml-1 text-sm text-gray-700">是</span>
+                        </label>
+                        <label class="inline-flex items-center ml-2">
+                            <input type="radio" name="isClueReason" value="不是" class="form-radio text-indigo-600 focus:ring-indigo-500">
+                            <span class="ml-1 text-sm text-gray-700">不是</span>
+                        </label>
+                        <span class="text-sm font-medium text-gray-700" id="clueReasonSuffix"> 我需要的線索，</span>
+                    </div>
+                </div>
+                <p class="text-sm text-gray-600 mt-1 mb-3" id="clueFollowUpText">現在我們必須趕快找到更多的線索。</p>
+
+                <!-- Reveal All Clues Section -->
+                <div id="revealAllCluesSection" class="my-6 p-6 bg-blue-100 rounded-xl shadow-lg">
+                    <h3 class="text-2xl font-semibold text-blue-700 mb-4">尋找更多線索</h3>
+                    <div id="allCluesPasswordPrompt">
+                        <label for="allCluesPassword" class="block text-sm font-medium text-gray-700">指導老師請提供密碼以揭露所有線索：</label>
+                        <input type="password" id="allCluesPassword" name="allCluesPassword" class="mt-1 block w-full md:w-1/2 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2">
+                        <button type="button" onclick="revealAllClues()" class="mt-2 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg shadow transition duration-150 ease-in-out">
+                            揭露所有線索
+                        </button>
+                        <p id="allCluesPasswordError" class="text-red-500 text-sm mt-1 hidden">密碼錯誤！</p>
+                    </div>
+                    <div id="allCluesDisplay" class="hidden mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- All clue cards will be injected here by JS -->
+                    </div>
+                </div>
+                
+                <!-- New section for human impact and ecological services -->
+                <div class="mt-6 pt-6 border-t border-gray-300 space-y-4">
+                    <p class="text-sm text-gray-700">這些線索都顯示人類高度活動造成的環境影響，因為我們居住的地方，與人類的活動範圍有高度的重疊，造成我們棲地的破壞；我們都是生態鏈中重要的一環，因此我們希望人類能夠對我們更友善。</p>
+                    <div>
+                        <label for="resourceUtilizationLevel" class="block text-sm font-medium text-gray-700">棲地的探索中，我和夥伴們一起討論得出結論是…….我們希望人類能夠：</label>
+                        <select id="resourceUtilizationLevel" name="resourceUtilizationLevel" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2">
+                            <option value="">-- 請選擇利用程度 --</option>
+                            <option value="高度">高度</option>
+                            <option value="適度">適度</option>
+                            <option value="低度">低度</option>
+                        </select>
+                        <span class="text-sm text-gray-700">的利用資源，讓【生態服務可以永續】。</span>
+                    </div>
+                    <p class="text-sm text-gray-700 italic">*透過老師的教學我們更了解【生態服務】是人類的「生命支持系統」，為人類提供必要的生態系服務。，因此繼續討論在日常生活中，有哪些行為可以成為改變的解方。</p>
+                </div>
+
+                <!-- Solution Card Selection and Tests -->
+                <div class="mt-6 pt-6 border-t border-gray-300 space-y-4">
+                    <label for="desiredSolutionCard" class="block text-sm font-medium text-gray-700">在日常生活中，有哪些行為可以成為改變的解方。經過反思，我想要努力達成的解方是：</label>
+                    <select id="desiredSolutionCard" name="desiredSolutionCard" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2">
+                        <option value="">-- 請選擇您想努力的解方 --</option>
+                    </select>
+
+                    <div id="test1Section" class="test-section hidden">
+                        <label for="test1UnEcoItem" class="block text-sm font-medium text-gray-700">獲得解方卡的考驗1: 請填寫一件您自己身上不夠環保的物品，或是一種您生活中不環保的行為。</label>
+                        <input type="text" id="test1UnEcoItem" name="test1UnEcoItem" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2">
+                        <p id="test1UnEcoItemError" class="text-red-500 text-sm mt-1 hidden">請至少輸入3個字元。</p>
+                    </div>
+
+                    <div id="test2Section" class="test-section hidden">
+                        <label for="test2UnEcoReason" class="block text-sm font-medium text-gray-700">獲得解方卡的考驗2: 請說明該物品或行為不夠環保的理由？</label>
+                        <textarea id="test2UnEcoReason" name="test2UnEcoReason" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2"></textarea>
+                        <p id="test2UnEcoReasonError" class="text-red-500 text-sm mt-1 hidden">請至少輸入6個字元。</p>
+                    </div>
+                    <p id="solutionConfirmationMessage" class="text-green-600 font-semibold mt-2 hidden"></p>
+                </div>
+                
+                <div> 
+                    <p class="block text-sm font-medium text-gray-700">我隨機抽到的解方卡提示是：<span id="storySolutionName" class="font-semibold">(完成考驗以查看您選擇的解方)</span></p>
+                </div>
+
+                <div>
+                    <label for="habitatRepairSolution" class="block text-sm font-medium text-gray-700">針對我們的棲地(<span id="solutionCharacterName" class="font-bold text-indigo-600">(角色)</span>)受到破壞，我認為透過人類行為可以修復的解方是:</label>
+                    <textarea id="habitatRepairSolution" name="habitatRepairSolution" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2"></textarea>
+                </div>
+                
+                <div>
+                    <label for="ecoChange" class="block text-sm font-medium text-gray-700">我對這個解方的理解以及在生活中應用的案例是?</label>
+                    <textarea id="ecoChange" name="ecoChange" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2"></textarea>
+                </div>
+                 <div>
+                    <label for="relationToHome" class="block text-sm font-medium text-gray-700">這和我的角色家園有什麼關係？</label>
+                    <textarea id="relationToHome" name="relationToHome" rows="2" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2"></textarea>
+                </div>
+                <div>
+                    <label for="groupPlan" class="block text-sm font-medium text-gray-700">我們小組提出的合作方案是：</label>
+                    <textarea id="groupPlan" name="groupPlan" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2"></textarea>
+                </div>
+                <div>
+                    <label for="personalCommitment" class="block text-sm font-medium text-gray-700">我個人的行動承諾是：</label>
+                    <textarea id="personalCommitment" name="personalCommitment" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2"></textarea>
+                </div>
+            </form>
+        </section>
+
+        <!-- My Adventure Story Section -->
+        <section class="mb-8 p-6 bg-white rounded-xl shadow-lg">
+            <h2 class="text-2xl font-semibold text-green-700 mb-4">📖 我的環境冒險故事</h2>
+            <textarea id="adventureStory" rows="10" class="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500" placeholder="您的冒險故事將會在這裡生成，您也可以自行編輯..."></textarea>
+            <button onclick="updateAdventureStory()" class="mt-4 bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-lg shadow transition duration-150 ease-in-out">
+                同步筆記到故事
+            </button>
+        </section>
+
+        <!-- Download Section -->
+        <section class="text-center p-6 bg-white rounded-xl shadow-lg">
+            <h2 class="text-2xl font-semibold text-green-700 mb-4">下載您的冒險</h2>
+            <button id="downloadStoryBtn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition duration-150 ease-in-out text-lg">
+                下載故事HTML檔案
+            </button>
+        </section>
+
+        <!-- Modal for Password Input -->
+        <div id="passwordModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center hidden z-50">
+            <div class="bg-white p-8 rounded-lg shadow-xl w-11/12 md:w-1/3">
+                <h3 class="text-xl font-semibold mb-4" id="modalTitle">輸入密碼</h3>
+                <input type="password" id="modalPasswordInput" class="w-full p-2 border border-gray-300 rounded-md mb-4">
+                <p id="modalError" class="text-red-500 text-sm mb-4 hidden"></p>
+                <div class="flex justify-end space-x-2">
+                    <button id="modalCancelButton" class="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400">取消</button>
+                    <button id="modalSubmitButton" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">確認</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Card Data
+        const cardData = {
+            character: [
+                { id: 'c1', name: '蜜蜂', emoji: '🐝', description: '勤勞的授粉者，是植物繁殖不可或缺的好幫手，也為我們帶來甜美的蜂蜜。' },
+                { id: 'c2', name: '食蛇龜', emoji: '🐢', description: '台灣唯一的陸棲型淡水龜，以蚯蚓、蝸牛、腐肉為食，有助於控制害蟲與分解有機物。' },
+                { id: 'c3', name: '金線蛙', emoji: '🐸', description: '背上有兩條金色線條的青蛙，喜歡在水田、埤塘活動，是農田生態系的重要指標。' },
+                { id: 'c4', name: '石虎', emoji: '🐅', description: '台灣現存唯一的野生貓科動物，擅長捕獵小型哺乳動物，是維持森林生態平衡的頂級掠食者。' },
+                { id: 'c5', name: '綠蠵龜', emoji: '🌊🐢', description: '大型洄游性海龜，以海草和大型藻類為主食，對維持海草床健康有關鍵作用。' }
+            ],
+            habitat: [
+                { id: 'h1', name: '熱帶及亞熱帶海域', emoji: '🏝️', description: '珊瑚礁、海草床、沿岸沙灘。人類活動指數：中至高' },
+                { id: 'h2', name: '低海拔丘陵林地', emoji: '🌳🌲', description: '低海拔至中海拔的丘陵、次生林、竹林、農田、茶園及鄉村邊緣，具隱蔽性的灌叢與林地。人類活動指數：中至高' },
+                { id: 'h3', name: '多樣化農田生態系', emoji: '🌾💧', description: '農田、溼地、樹林邊緣、池塘、灌木叢等多樣化生態環境。人類活動指數：中至高' },
+                { id: 'h4', name: '丘陵森林濕地', emoji: '⛰️🏞️', description: '低海拔至中海拔的丘陵、森林、灌叢、濕地、農田邊緣等。人類活動指數：中' },
+                { id: 'h5', name: '草原森林農場', emoji: '🌿🦋', description: '草原、森林邊緣、農場、果園等。人類活動指數：中至高' }
+            ],
+            clue: [
+                { id: 'cl1', name: '觀光與遊憩活動', emoji: '🏖️🚤', description: '沿岸觀光、沙灘遊憩、水上運動（潛水、浮潛、遊艇）可能干擾野生動物作息，破壞棲地。' },
+                { id: 'cl2', name: '農業生產與土地利用', emoji: '🚜🌱', description: '農業耕作、農作耕種、農地開墾、茶園種植、農地整理、魚塘養殖、水塘整治，可能導致棲地破碎化、單一化。' },
+                { id: 'cl3', name: '基礎設施與開發建設', emoji: '🏗️🏘️', description: '道路建設、聚落擴展、港口/工業設施、土地開發、水利設施（灌溉、排水）、林地開墾，常造成棲地永久性消失。' },
+                { id: 'cl4', name: '資源利用與非法行為', emoji: '🎣🚫', description: '過度捕魚、非法採卵、非法捕獵、非法捕捉，直接威脅物種生存。' },
+                { id: 'cl5', name: '化學物質使用', emoji: '🧪⚠️', description: '農藥施灑、除草劑使用、毒餌施用，可能毒害非目標物種，污染土壤和水源。' },
+                { id: 'cl6', name: '環境污染', emoji: '🗑️🏭', description: '海洋污染（垃圾、塑膠）、工業廢水、空氣污染等，全面性地影響生態環境品質。' }
+            ],
+            solution: [
+                { id: 's1', name: '減塑行動與垃圾管理', emoji: '♻️🛍️', description: '選用可重複使用的餐具、購物袋、杯子，減少一次性塑膠使用。正確垃圾分類與回收。避免購買含有微塑膠、難分解塑膠包材的產品。減少海洋與內陸垃圾，降低對野生動物的危害。' },
+                { id: 's2', name: '友善農漁產品消費', emoji: '🥕🐟', description: '支持與購買友善耕作、減農藥使用農產品，有助於棲地多樣性生物生存。降低水體與土壤污染，有助生態系恢復。支持生產端保留自然棲地與多樣化作物。選擇具有永續認證的水產品。避免過度捕撈，守護海洋生態。' },
+                { id: 's3', name: '生態旅遊與友善觀光', emoji: '🚶‍♂️🏞️', description: '外出旅遊遵守生態規範。注意動物繁殖季節，不進入野生動物繁殖地。不採集、不餵食野生動物。選擇有生態友善認證的旅宿與遊程。支持不干擾野生動物、保護棲地的農友及觀光業者。' },
+                { id: 's4', name: '社區行動與志工參與', emoji: '🤝🧤', description: '參加社區巡守或自然志工。協助社區進行外來種移除、垃圾淨山（海）、棲地監測等。參與並選購推動環境保育的社區品牌或團體產品。如推廣保育農產、棲地復育計畫商品，讓消費成為環境行動的一部分。' },
+                { id: 's5', name: '生態環境教育推動', emoji: '🧑‍🏫📚', description: '推動或參加生態環境教育活動。學校與社區定期舉辦生態解說、棲地復育、田野體驗課程。' },
+                { id: 's6', name: '設置生物綠帶', emoji: '🌳🦋🐾', description: '建立或維護連接破碎棲地的廊道，幫助野生動物安全遷移、覓食與繁殖，增加生物多樣性。' },
+                { id: 's7', name: '綠色消費', emoji: '🛍️🌍💚', description: '選擇對環境友善、低污染、可回收或來自永續來源的產品與服務，減少消費行為對環境的負擔。' }
+            ]
+        };
+
+        let drawnCards = {
+            character: null,
+            habitat: null,
+            clue: null,
+            solution: null 
+        };
+        let chosenSolutionCard = null; 
+
+        let situationRevealed = false;
+        let allCluesRevealed = false;
+        const SITUATION_TEXT = "家鄉的同伴都不見了! 他們去了哪裡？";
+
+        // Function to draw a card
+        function drawCard(type) {
+            const cards = cardData[type];
+            if (!cards || cards.length === 0) return;
+
+            const randomIndex = Math.floor(Math.random() * cards.length);
+            const card = cards[randomIndex];
+            
+            drawnCards[type] = card;
+
+            const cardContainer = document.getElementById(`${type}CardContainer`);
+            const cardBack = document.getElementById(`${type}CardBack`);
+            
+            cardBack.innerHTML = `
+                <p class="text-2xl mb-2">${card.emoji}</p>
+                <h4 class="text-lg font-bold mb-1">${card.name}</h4>
+                <p class="text-xs text-left">${card.description}</p>
+            `;
+            if (!cardContainer.classList.contains('flipped')) {
+                cardContainer.classList.add('flipped');
+            }
+
+            updateDrawnCardDisplay(type, card);
+            updateStoryFormWithCard(type, card);
+        }
+
+        // Function to update the "My Drawn Cards" section
+        function updateDrawnCardDisplay(type, card) {
+            const displayElement = document.getElementById(`drawn${type.charAt(0).toUpperCase() + type.slice(1)}Card`);
+            if (displayElement) {
+                displayElement.innerHTML = `
+                    <h3>${cardTypeToChinese(type)}：</h3>
+                    <p class="emoji">${card.emoji}</p>
+                    <p class="font-semibold">${card.name}</p>
+                    <p class="text-sm text-gray-600">${card.description}</p>
+                `;
+            }
+        }
+        
+        function cardTypeToChinese(type) {
+            switch(type) {
+                case 'character': return '角色卡';
+                case 'habitat': return '棲地卡';
+                case 'clue': return '線索卡';
+                case 'solution': return '解方卡';
+                default: return '';
+            }
+        }
+
+        // Function to update story form with drawn card info
+        function updateStoryFormWithCard(type, card) {
+            if (type === 'character') {
+                document.getElementById('storyCharacterName').textContent = card.name;
+                document.getElementById('animalKnowledgeLabel').innerHTML = `${card.name}有一些獨特的特性是 (寫下自己對<span class="font-bold text-indigo-600">${card.name}</span>的認識):`;
+                const hometownCharNameSpan = document.getElementById('hometownCharacterNameDisplay');
+                if (hometownCharNameSpan) { 
+                    hometownCharNameSpan.textContent = card.name;
+                }
+                const solutionCharNameSpan = document.getElementById('solutionCharacterName');
+                if (solutionCharNameSpan) {
+                    solutionCharNameSpan.textContent = card.name;
+                }
+            } else if (type === 'habitat') {
+                document.getElementById('storyHabitatName').textContent = card.name;
+            } else if (type === 'clue') {
+                document.getElementById('storyClueNameForReasoning').textContent = `${card.name} (${card.emoji})`;
+            } else if (type === 'solution') {
+                // This updates the "randomly drawn" solution card display
+                document.getElementById('storySolutionName').textContent = `${card.name} (${card.emoji})`;
+            }
+        }
+        
+        // Function to reveal situation
+        function revealSituation() {
+            const passwordInput = document.getElementById('situationPassword');
+            const passwordError = document.getElementById('passwordError');
+            const situationCardDisplay = document.getElementById('situationCardDisplay');
+            const passwordPrompt = document.getElementById('passwordPrompt');
+            const clueReasoningTextarea = document.getElementById('clueReasoning');
+            const situationContextClueSpan = document.getElementById('situationContextForClue');
+            const situationContextReasoningSpan = document.getElementById('situationContextForReasoning');
+
+            if (passwordInput.value === 'SOS99999') {
+                situationCardDisplay.classList.remove('hidden');
+                passwordPrompt.classList.add('hidden'); 
+                passwordError.classList.add('hidden');
+                situationRevealed = true;
+
+                if (clueReasoningTextarea) {
+                    clueReasoningTextarea.value = SITUATION_TEXT; 
+                }
+                if (situationContextClueSpan) {
+                    situationContextClueSpan.textContent = SITUATION_TEXT; 
+                }
+                if (situationContextReasoningSpan) {
+                    situationContextReasoningSpan.textContent = SITUATION_TEXT; 
+                }
+                updateAdventureStory(); 
+            } else {
+                passwordError.classList.remove('hidden');
+                passwordInput.value = ''; 
+            }
+        }
+
+        // Function to reveal all clues
+        function revealAllClues() {
+            const passwordInput = document.getElementById('allCluesPassword');
+            const passwordError = document.getElementById('allCluesPasswordError');
+            const allCluesDisplay = document.getElementById('allCluesDisplay');
+            const allCluesPasswordPrompt = document.getElementById('allCluesPasswordPrompt');
+
+            if (passwordInput.value === '99999') {
+                allCluesPasswordPrompt.classList.add('hidden');
+                passwordError.classList.add('hidden');
+                allCluesDisplay.classList.remove('hidden');
+                allCluesDisplay.innerHTML = ''; 
+
+                cardData.clue.forEach(clue => {
+                    const clueDiv = document.createElement('div');
+                    clueDiv.className = 'all-clues-card-display p-3'; 
+                    clueDiv.innerHTML = `
+                        <p class="emoji">${clue.emoji}</p>
+                        <h4 class="text-md font-semibold mb-1">${clue.name}</h4>
+                        <p class="text-xs text-gray-600">${clue.description}</p>
+                    `;
+                    allCluesDisplay.appendChild(clueDiv);
+                });
+                allCluesRevealed = true;
+                updateAdventureStory();
+            } else {
+                passwordError.classList.remove('hidden');
+                passwordInput.value = '';
+            }
+        }
+        
+        // Function to update the adventure story text area
+        function updateAdventureStory() {
+            const form = document.getElementById('storyForm');
+            const formData = new FormData(form);
+            let story = `我的名字叫 ${formData.get('myName') || '(未填寫)'}。\n`;
+            story += `今天我化身為一隻 ${drawnCards.character ? drawnCards.character.name : '(未選擇角色)'} (${drawnCards.character ? drawnCards.character.emoji : ''})。\n`;
+            story += `我找到的夥伴名字是：${formData.get('partnerNames') || '(未填寫)'}。\n`;
+            story += `他們的專業包含了：${formData.get('partnerExpertise') || '(未填寫)'}。\n`;
+            story += `我有信心一起尋找我們的棲地找到我們的家鄉完成今天的任務。\n\n`;
+
+            story += `${drawnCards.character ? drawnCards.character.name : '我'}有一些獨特的特性是：${formData.get('animalKnowledge') || '(未填寫)'}\n\n`;
+            
+            story += `我抽到的棲地卡(家園)是 ${drawnCards.habitat ? drawnCards.habitat.name : '(未選擇棲地)'} (${drawnCards.habitat ? drawnCards.habitat.emoji : ''})。\n`;
+            const isHometown = formData.get('isHometown');
+            story += `我覺得這可能 ${isHometown ? isHometown : '(未選擇)'} 我的家鄉。\n`;
+            story += `於是我與我們夥伴們一起討論，我們的家鄉應該(還)會有..... (說明有利於${drawnCards.character ? drawnCards.character.name : '(角色)'}生活居住的理由)：${formData.get('hometownDiscussion') || '(未填寫理由)'}\n`;
+            
+            story += `\n--- 棲地卡交換結果 ---\n`;
+            story += `我真正需要的棲地卡是：${formData.get('neededHabitatCard') || '(未選擇)'}。\n`;
+            story += `我們的隊伍在交流後，總共取得了 ${formData.get('correctCardsObtained') || '0'} 張正確的棲地卡。\n`;
+            story += `與其他隊伍的交換詳情：\n`;
+            let exchangeMade = false;
+            for (let i = 1; i <= 4; i++) { 
+                const team = formData.get(`exchangeTeam${i}`);
+                const count = formData.get(`exchangeCount${i}`);
+                if (team && count && parseInt(count) > 0) {
+                    story += `  - 我們跟 ${team} 隊伍交換了 ${count} 張棲地卡。\n`;
+                    exchangeMade = true;
+                }
+            }
+            if (!exchangeMade) {
+                story += `  (尚無詳細交換紀錄)\n`;
+            }
+            let thanksTo = [];
+            for (let i = 1; i <= 5; i++) {
+                const partnerName = formData.get(`finalThanksPartner${i}`);
+                if (partnerName) {
+                    thanksTo.push(partnerName);
+                }
+            }
+            if (thanksTo.length > 0) {
+                story += `最終，謝謝 ${thanksTo.join('、')} 幫助我獲得了正確的棲地卡！\n`;
+            } else {
+                story += `最終，(沒有特別感謝的對象)幫助我獲得了正確的棲地卡！\n`;
+            }
+
+            story += `我的其他夥伴也都找到正確的棲地卡了，現在我們要一起回到我們的家鄉去看看了!....\n\n`;
+            
+            const mysteryContextForStory = situationRevealed ? SITUATION_TEXT : "???";
+
+            if (situationRevealed) {
+                story += `--- 緊急情境！ ---\n`;
+                story += `回到家鄉後，卻發現${SITUATION_TEXT} 我們必須找出線索！\n\n`;
+            }
+            
+            story += `為了解決${mysteryContextForStory}的謎團，\n`;
+            story += `我和組員夥伴推理出${mysteryContextForStory}的可能原因是：${formData.get('clueReasoning') || (situationRevealed ? SITUATION_TEXT : '(未填寫)' )}\n`;
+
+            story += `我抽到的線索是 ${drawnCards.clue ? drawnCards.clue.name + ' (' + drawnCards.clue.emoji + ')' : '(未選擇線索)'}。\n`; 
+            const isClueReason = formData.get('isClueReason');
+            story += `我認為這 ${isClueReason ? isClueReason : '(未選擇)'} ${document.getElementById('clueReasonSuffix').textContent.trim()}\n`; 
+            story += `${document.getElementById('clueFollowUpText').textContent.trim()}\n\n`; 
+
+            if (allCluesRevealed) {
+                story += `指導老師揭露了所有可能的線索，我們發現：\n`;
+                cardData.clue.forEach(clue => {
+                    story += `- ${clue.name}: ${clue.description}\n`;
+                });
+                story += "\n";
+            }
+
+            story += `--- 尋找解方 ---\n`;
+            story += `這些線索都顯示人類高度活動造成的環境影響，因為我們居住的地方，與人類的活動範圍有高度的重疊，造成我們棲地的破壞；我們都是生態鏈中重要的一環，因此我們希望人類能夠對我們更友善。\n`;
+            story += `棲地的探索中，我和夥伴們一起討論得出結論是…….我們希望人類能夠 ${formData.get('resourceUtilizationLevel') || '(未選擇)'} 的利用資源，讓【生態服務可以永續】。\n`;
+            story += `*透過老師的教學我們更了解【生態服務】是人類的「生命支持系統」，為人類提供必要的生態系服務。，因此繼續討論在日常生活中，有哪些行為可以成為改變的解方。\n\n`;
+            
+            const desiredSolutionName = formData.get('desiredSolutionCard');
+            const test1UnEcoItem = formData.get('test1UnEcoItem') || '(未填寫)';
+            const test2UnEcoReason = formData.get('test2UnEcoReason') || '(未填寫)';
+            const test1Passed = test1UnEcoItem.length > 2;
+            const test2Passed = test2UnEcoReason.length > 5;
+
+            if (desiredSolutionName) {
+                story += `在日常生活中，有哪些行為可以成為改變的解方。經過反思，我想要努力達成的解方是：${desiredSolutionName}。\n`;
+                if (test1Passed) {
+                    story += `考驗1 - 我的不環保行為/物品：${test1UnEcoItem}\n`;
+                    if (test2Passed) {
+                        story += `考驗2 - 不環保的理由：${test2UnEcoReason}\n`;
+                        story += `(已通過考驗，成功鎖定此解方！)\n`;
+                    } else {
+                        story += `(考驗2未完成或未通過)\n`;
+                    }
+                } else {
+                     story += `(考驗1未完成或未通過)\n`;
+                }
+            } else {
+                story += `我隨機抽到的解方卡提示是：${drawnCards.solution ? drawnCards.solution.name + ' (' + drawnCards.solution.emoji + ')' : '(未抽取/選擇解方)'}。\n`;
+            }
+            
+            story += `針對我們的棲地(${drawnCards.character ? drawnCards.character.name : '(角色)'})受到破壞，我認為透過人類行為可以修復的解方是：${formData.get('habitatRepairSolution') || '(未填寫)'}\n`;
+            story += `我對這個解方的理解以及在生活中應用的案例是? ${formData.get('ecoChange') || '(未填寫)'}\n\n`;
+
+            story += `--- 我的反思與挑戰 ---\n`;
+            story += `這和我的角色家園有什麼關係？ ${formData.get('relationToHome') || '(未填寫)'}\n\n`;
+            story += `我們小組提出的合作方案是：${formData.get('groupPlan') || '(未填寫)'}\n`;
+            story += `我個人的行動承諾是：${formData.get('personalCommitment') || '(未填寫)'}\n`;
+
+            document.getElementById('adventureStory').value = story;
+        }
+        
+        // Download story functionality
+        document.getElementById('downloadStoryBtn').addEventListener('click', () => {
+            updateAdventureStory(); 
+            const storyText = document.getElementById('adventureStory').value;
+            const myName = document.getElementById('myName').value || '玩家';
+            
+            let htmlContent = `
+                <!DOCTYPE html>
+                <html lang="zh-TW">
+                <head>
+                    <meta charset="UTF-8">
+                    <title>${myName}的環境冒險故事</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; line-height: 1.6; padding: 20px; background-color: #f4f4f4; color: #333; }
+                        .container { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+                        h1, h2 { color: #2c5282; }
+                        .card-section { margin-bottom: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 5px; background-color: #f9f9f9;}
+                        .card-section h3, .card-section h4 { margin-top: 0; font-size: 1.2em; }
+                        .card-section .emoji { font-size: 2em; margin-right: 10px; vertical-align: middle; }
+                        .story-content { white-space: pre-wrap; background-color: #e9f5ff; padding: 15px; border-radius: 5px; font-family: 'Courier New', Courier, monospace; }
+                        .form-data p { margin: 5px 0; }
+                        .form-data strong { color: #2c5282; min-width: 180px; display: inline-block;}
+                        .situation-active { background-color: #fee2e2 !important; border-color: #f87171 !important; }
+                        .situation-active h4 { color: #b91c1c !important; }
+                        .all-clues-section { background-color: #e0f2fe !important; border-color: #7dd3fc !important; }
+                        .all-clues-section h3 { color: #0369a1 !important; }
+                        .all-clues-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
+                        .clue-item { border: 1px solid #ccc; padding: 10px; border-radius: 4px; background: #fff; }
+                        .clue-item .emoji { font-size: 1.5em; }
+                    </style>
+                </head>
+                <body>
+                    <div class="container">
+                        <h1>${myName}的環境冒險故事</h1>
+            `;
+
+            htmlContent += `<h2>我抽到的卡片：</h2>`;
+            if (drawnCards.character) {
+                htmlContent += `
+                    <div class="card-section">
+                        <h3><span class="emoji">${drawnCards.character.emoji}</span>角色卡：${drawnCards.character.name}</h3>
+                        <p>${drawnCards.character.description}</p>
+                    </div>`;
+            }
+            if (drawnCards.habitat) {
+                htmlContent += `
+                    <div class="card-section">
+                        <h3><span class="emoji">${drawnCards.habitat.emoji}</span>棲地卡：${drawnCards.habitat.name}</h3>
+                        <p>${drawnCards.habitat.description}</p>
+                    </div>`;
+            }
+             if (situationRevealed) {
+                htmlContent += `
+                    <div class="card-section situation-active">
+                        <h4><span class="emoji">⚠️</span>緊急情境已揭露</h4>
+                        <p>${SITUATION_TEXT}</p>
+                    </div>`;
+            }
+            if (drawnCards.clue) {
+                 htmlContent += `
+                    <div class="card-section">
+                        <h3><span class="emoji">${drawnCards.clue.emoji}</span>我抽到的線索卡：${drawnCards.clue.name}</h3>
+                        <p>${drawnCards.clue.description}</p>
+                    </div>`;
+            }
+
+            if (allCluesRevealed) {
+                htmlContent += `<div class="card-section all-clues-section"><h3><span class="emoji">🔍</span>所有可能的線索：</h3><div class="all-clues-grid">`;
+                cardData.clue.forEach(clue => {
+                    htmlContent += `<div class="clue-item"><p class="emoji">${clue.emoji}</p><strong>${clue.name}</strong><p>${clue.description}</p></div>`;
+                });
+                htmlContent += `</div></div>`;
+            }
+
+            const form = document.getElementById('storyForm');
+            const currentFormData = new FormData(form);
+            const desiredSolutionName = currentFormData.get('desiredSolutionCard');
+            const test1UnEcoItem = currentFormData.get('test1UnEcoItem');
+            const test2UnEcoReason = currentFormData.get('test2UnEcoReason');
+            const test1Passed = test1UnEcoItem && test1UnEcoItem.length > 2;
+            const test2Passed = test2UnEcoReason && test2UnEcoReason.length > 5;
+
+            if (desiredSolutionName && test1Passed && test2Passed) {
+                 const chosenSolutionData = cardData.solution.find(s => s.name === desiredSolutionName);
+                 if(chosenSolutionData){
+                    htmlContent += `
+                    <div class="card-section" style="background-color: #d1fae5; border-color: #6ee7b7;">
+                        <h3><span class="emoji">${chosenSolutionData.emoji}</span>我努力達成的解方：${chosenSolutionData.name}</h3>
+                        <p>${chosenSolutionData.description}</p>
+                    </div>`;
+                 }
+            } else if (drawnCards.solution) { 
+                htmlContent += `
+                    <div class="card-section">
+                        <h3><span class="emoji">${drawnCards.solution.emoji}</span>我隨機抽到的解方卡提示：${drawnCards.solution.name}</h3>
+                        <p>${drawnCards.solution.description}</p>
+                    </div>`;
+            }
+
+
+            htmlContent += `<h2>我的故事與反思筆記：</h2>`;
+            htmlContent += `<div class="form-data">`;
+            
+            const formElements = document.getElementById('storyForm').elements;
+            const formLabels = { 
+                myName: "我的名字叫",
+                partnerNames: "我找到的夥伴名字是",
+                partnerExpertise: "他們的專業包含了",
+                animalKnowledge: `${drawnCards.character ? drawnCards.character.name : '我'}有一些獨特的特性是 (寫下自己對${drawnCards.character ? drawnCards.character.name : '該動物'}的認識)`,
+                isHometown: "我抽到的棲地卡是否為我的家鄉",
+                hometownDiscussion: `於是我與我們夥伴們一起討論，我們的家鄉應該(還)會有..... (說明有利於${drawnCards.character ? drawnCards.character.name : '(角色)'}生活居住的理由)`,
+                neededHabitatCard: "我真正需要的棲地卡是",
+                correctCardsObtained: "我們隊伍換到的正確棲地卡數量",
+                exchangeTeam1: "與隊伍1交換",
+                exchangeCount1: "交換數量1",
+                exchangeTeam2: "與隊伍2交換",
+                exchangeCount2: "交換數量2",
+                exchangeTeam3: "與隊伍3交換",
+                exchangeCount3: "交換數量3",
+                exchangeTeam4: "與隊伍4交換",
+                exchangeCount4: "交換數量4",
+                finalThanksPartner1: "感謝的夥伴/隊伍1",
+                finalThanksPartner2: "感謝的夥伴/隊伍2",
+                finalThanksPartner3: "感謝的夥伴/隊伍3",
+                finalThanksPartner4: "感謝的夥伴/隊伍4",
+                finalThanksPartner5: "感謝的夥伴/隊伍5",
+                clueReasoning: `我和組員夥伴推理出 ${document.getElementById('situationContextForReasoning').textContent} 的可能原因是`,
+                isClueReason: `我認為抽到的線索卡是否為原因`,
+                resourceUtilizationLevel: "我們希望人類利用資源的程度",
+                desiredSolutionCard: "我想要努力達成的解方是",
+                test1UnEcoItem: "考驗1-不環保的物品/行為",
+                test2UnEcoReason: "考驗2-不環保的理由",
+                habitatRepairSolution: `針對我們的棲地(${drawnCards.character ? drawnCards.character.name : '(角色)'})受到破壞，我認為透過人類行為可以修復的解方是`,
+                ecoChange: "我對這個解方的理解以及在生活中應用的案例是?",
+                relationToHome: "這和我的角色家園有什麼關係？",
+                groupPlan: "我們小組提出的合作方案是",
+                personalCommitment: "我個人的行動承諾是"
+            };
+
+            for (const elementName in formLabels) {
+                if (formElements[elementName]) {
+                    let value;
+                    if (formElements[elementName].type === 'radio') {
+                        const checkedRadio = document.querySelector(`input[name="${elementName}"]:checked`);
+                        value = checkedRadio ? checkedRadio.value : '(未選擇)';
+                    } else {
+                        value = formElements[elementName].value || '(未填寫)';
+                    }
+                     if (value !== '(未填寫)' && value !== '') { 
+                        htmlContent += `<p><strong>${formLabels[elementName]}:</strong> ${value}</p>`;
+                    }
+                }
+            }
+            
+            htmlContent += `</div>`;
+            
+            htmlContent += `<h2>我的完整冒險故事：</h2>`;
+            htmlContent += `<div class="story-content"><pre>${storyText}</pre></div>`;
+            
+            htmlContent += `
+                    </div>
+                </body>
+                </html>
+            `;
+
+            const blob = new Blob([htmlContent], { type: 'text/html' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `${myName}_環境冒險故事.html`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(a.href);
+        });
+
+        // Initialize solution card dropdown
+        const desiredSolutionCardSelect = document.getElementById('desiredSolutionCard');
+        cardData.solution.forEach(sol => {
+            const option = document.createElement('option');
+            option.value = sol.name;
+            option.textContent = `${sol.name} (${sol.emoji})`;
+            desiredSolutionCardSelect.appendChild(option);
+        });
+
+        // Event listener for the guide button
+        document.getElementById('guideButton').addEventListener('click', function() {
+            const password = prompt("請輸入密碼以開啟教學指南：");
+            if (password === "CBDSOS") {
+                const guideWindow = window.open("", "_blank");
+                guideWindow.document.write(`
+                    <!DOCTYPE html>
+                    <html lang="zh-TW">
+                    <head>
+                        <meta charset="UTF-8">
+                        <title>生態棲地破冰活動 指導老師教案</title>
+                        <style>
+                            body { font-family: Arial, sans-serif; line-height: 1.6; margin: 20px; padding: 20px; }
+                            h1, h2, h3 { color: #333; }
+                            table { border-collapse: collapse; width: 100%; margin-bottom: 20px; }
+                            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                            th { background-color: #f2f2f2; }
+                        </style>
+                    </head>
+                    <body>
+                        <h1>生態棲地破冰活動 指導老師教案</h1>
+
+                        <h2>一、活動總覽</h2>
+                        <p><strong>活動名稱：</strong> 生態棲地奇遇記：互動式探索與創造</p>
+                        <p><strong>活動對象：</strong> 學生（建議國小高年級至成人，可依據參與者年齡調整引導深度與討論內容）</p>
+                        <p><strong>活動時長：</strong> 預計 90 - 120 分鐘 (可彈性調整各環節時間)</p>
+                        <p><strong>活動形式：</strong> 運用「生態棲地破冰活動」互動網頁（或搭配實體卡牌），結合角色扮演、小組討論、故事創作與分享。</p>
+                        <p><strong>核心理念：</strong> 透過模擬生態系統中的角色與挑戰，增進參與者對生物多樣性、棲地保護及永續發展的認識與情感連結，並啟發實際的環保行動。</p>
+                        <p><strong>使用工具：</strong> 「生態棲地破冰活動」互動網頁。</p>
+
+                        <h2>二、學習目標</h2>
+                        <p>完成本活動後，參與者應能：</p>
+                        <ol>
+                            <li><strong>認知層面：</strong>
+                                <ul>
+                                    <li>說出至少一種台灣本土物種及其基本生活習性。</li>
+                                    <li>解釋棲地對生物生存的重要性。</li>
+                                    <li>列舉至少三種人類活動對生態環境可能造成的影響。</li>
+                                    <li>識別並說明至少三種環境保護的行動方案。</li>
+                                    <li>初步理解「生態服務」的意義及其與人類福祉的關聯。</li>
+                                </ul>
+                            </li>
+                            <li><strong>技能層面：</strong>
+                                <ul>
+                                    <li>順利操作互動網頁完成遊戲流程。</li>
+                                    <li>透過線索卡與情境，練習觀察、分析與解決問題的能力。</li>
+                                    <li>運用抽到的卡片元素，組織並創作一個簡短的生態故事。</li>
+                                    <li>在小組中進行有效的溝通、協作與意見表達。</li>
+                                </ul>
+                            </li>
+                            <li><strong>情意層面：</strong>
+                                <ul>
+                                    <li>增強對本土生態環境的關懷與欣賞。</li>
+                                    <li>體驗生物在生態系統中所扮演的角色與面臨的困境。</li>
+                                    <li>反思個人生活習慣與環境保護的關聯性。</li>
+                                    <li>激發參與環境保護行動的意願與責任感。</li>
+                                </ul>
+                            </li>
+                        </ol>
+
+                        <h2>三、活動準備</h2>
+                        <ul>
+                            <li><strong>硬體設備：</strong>
+                                <ul>
+                                    <li>每位學員或每組一台可上網的裝置（電腦、平板或智慧型手機）。</li>
+                                    <li>投影機與螢幕（用於展示網頁、引導說明）。</li>
+                                    <li>穩定的網路連線。</li>
+                                </ul>
+                            </li>
+                            <li><strong>軟體/教材：</strong>
+                                <ul>
+                                    <li>「生態棲地破冰活動」互動網頁的連結或QR Code。</li>
+                                    <li>（備選）實體卡牌組：角色卡、棲地卡、線索卡、解方卡（若網路不便或作為輔助）。</li>
+                                    <li>學習單或筆記紙、筆（網頁內建筆記功能，但實體筆記可供輔助）。</li>
+                                    <li>(選擇性) 計時器。</li>
+                                </ul>
+                            </li>
+                            <li><strong>指導老師事前準備：</strong>
+                                <ul>
+                                    <li>熟悉「生態棲地破冰活動」互動網頁的各項功能與流程。</li>
+                                    <li>預先測試網頁在教學環境中的運作情況。</li>
+                                    <li>準備好引導問題與討論方向。</li>
+                                    <li><strong>記下密碼：</strong>
+                                        <ul>
+                                            <li><strong>情境卡密碼：</strong> <code>SOS99999</code></li>
+                                            <li><strong>線索卡密碼：</strong> <code>99999</code></li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
+
+                        <h2>四、活動流程與指導語參考</h2>
+                        <hr>
+                        <h3>第一階段：角色建立與家園探索 (約 25 - 30 分鐘)</h3>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>步驟</th>
+                                    <th>時間 (分鐘)</th>
+                                    <th>教學活動內容與指導語</th>
+                                    <th>教學提示</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>1. 開場與分組</strong></td>
+                                    <td>5 分鐘</td>
+                                    <td><strong>指導老師：</strong> 「大家好！歡迎來到今天的『生態棲地奇遇記』。在這個活動中，我們將一起探索台灣豐富的生態，並思考如何保護我們珍貴的自然環境。首先，請大家分成小組，每組大約3-5人。」</td>
+                                    <td>確保所有學員都能順利進入網頁。</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>2. 角色認同</strong></td>
+                                    <td>10 分鐘</td>
+                                    <td><strong>指導老師：</strong> 「現在，請各組打開活動網頁。首先，每個人都要抽取一張『角色卡』，這就是你今天的身分！請仔細閱讀卡片上的介紹。接著，在筆記區寫下你的名字，並根據你對這個動物的了解，想像一下『（動物名）有一些獨特的特性是...』，把它記錄下來。然後，和你的夥伴們討論一下，你們這群動物夥伴各自有什麼『專長』？例如，誰擅長觀察？誰擅長溝通？把夥伴的名字和你們認為的專長寫下來。我有信心一起尋找我們的棲地找到我們的家鄉完成今天的任務。」</td>
+                                    <td>鼓勵學員發揮想像力，將角色與個人特質連結，增加代入感。</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>3. 棲地配對</strong></td>
+                                    <td>10 分鐘</td>
+                                    <td><strong>指導老師：</strong> 「接下來，每個人都要為自己抽取一張『棲地卡』，這代表你目前所在的環境。請仔細閱讀棲地描述，並跟你的夥伴討論：這個棲地適合你的角色居住嗎？為什麼？把你理想中的家園樣貌，以及跟夥伴討論的理由寫在筆記區。如果抽到的棲地不適合，你們可以跟其他小組進行交換，並記錄下交換的過程。在筆記區的『棲地卡交換結果紀錄』中，先從選單選擇你真正需要的棲地，然後記錄下你們和哪些隊伍交換了幾張卡片。最後，別忘了感謝幫助你找到新家的夥伴們！」</td>
+                                    <td>此環節強調溝通與協商。提醒學員思考生物與環境的適應關係。</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <hr>
+                        <h3>第二階段：危機浮現與線索追查 (約 30 分鐘)</h3>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>步驟</th>
+                                    <th>時間 (分鐘)</th>
+                                    <th>教學活動內容與指導語</th>
+                                    <th>教學提示</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>4. 危機降臨</strong></td>
+                                    <td>5 分鐘</td>
+                                    <td><strong>指導老師：</strong> 「太好了！大家都找到了理想的家園。但就在你們準備享受安寧生活的時候，一件意想不到的事情發生了！請大家找到『突發情境』區塊，現在我要公布一組密碼，請輸入：<strong>SOS99999</strong>，看看發生了什麼事！」</td>
+                                    <td>老師公布密碼後，讓學員自行操作，感受情境帶來的衝擊。網頁會自動將情境文字填入後續的提問中。</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>5. 尋找線索</strong></td>
+                                    <td>10 分鐘</td>
+                                    <td><strong>指導老師：</strong> 「我們的家園發生了危機，同伴們都消失了。我們需要找出原因！現在，請每個小組抽一張『線索卡』，這張卡片代表你們找到的第一條線索。請根據這條線索，和你的夥伴們討論，家鄉到底發生了什麼事？把你們的推論寫在筆記本上。同時，思考一下，這張卡片真的是最重要的原因嗎？還是有其他可能？」</td>
+                                    <td>鼓勵學員發揮創意，進行推理性思考。引導他們將線索與自己的角色、棲地連結。</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>6. 探索更多可能性**</td>
+                                    <td>5 分鐘</td>
+                                    <td><strong>指導老師：** 「一個事件的發生，通常不會只有單一原因。現在，我將提供第二組密碼，讓你們看到所有可能的威脅。請輸入：**99999**。看看這些線索，哪些可能也與你們家園的危機有關？」</td>
+                                    <td>這個環節讓學員理解問題的複雜性，並擴展他們的思考範圍。</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>7. 小組討論與分享**</td>
+                                    <td>10 分鐘</td>
+                                    <td><strong>指導老師：** 「現在請各組根據你們手上所有的資訊——你的角色、你的棲地、你抽到的線索卡以及所有可能的線索，一起討論看看，你們認為造成家園危機最主要的原因是什麼？請準備跟其他組分享你們的發現。」</td>
+                                    <td>營造支持與鼓勵的氛圍，讓每個小組都有機會分享。</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <hr>
+                        <h3>第三階段：尋求解方與採取行動 (約 35 分鐘)</h3>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>步驟</th>
+                                    <th>時間 (分鐘)</th>
+                                    <th>教學活動內容與指導語</th>
+                                    <th>教學提示</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>8. 探討生態服務與人類影響</strong></td>
+                                    <td>10 分鐘</td>
+                                    <td><strong>指導老師：</strong> 「剛剛我們看到，人類的許多活動都會對環境造成影響。這些線索都顯示人類高度活動造成的環境影響，因為我們居住的地方，與人類的活動範圍有高度的重疊，造成我們棲地的破壞；我們都是生態鏈中重要的一環，因此我們希望人類能夠對我們更友善。<br><br>棲地的探索中，我和夥伴們一起討論得出結論是…….我們希望人類能夠（引導學生思考並選擇『高度』、『適度』或『低度』）的利用資源，讓【生態服務可以永續】。<br><br>大家知道什麼是『生態服務』嗎？（稍作停頓，讓學員思考或回答）簡單來說，就是大自然為我們提供的好處，像是乾淨的空氣、水源、食物等等。所以，保護環境其實也是在保護我們自己。透過老師的教學我們更了解【生態服務】是人類的「生命支持系統」，為人類提供必要的生態系服務。因此，讓我們繼續討論在日常生活中，有哪些行為可以成為改變的解方。」</td>
+                                    <td>藉此機會簡要介紹「生態服務」與「永續發展」的概念，連結活動與真實世界。引導學生思考不同利用程度的後果。</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>9. 尋求解方與考驗</strong></td>
+                                    <td>15 分鐘</td>
+                                    <td><strong>指導老師：</strong> 「現在，我們來思考如何解決問題。請在筆記區的『解方卡』部分，從下拉選單中選擇一個你認為最能幫助你們家園的方案。選擇後，會出現兩個小考驗，請誠實地回答，這能幫助我們思考，環境保護其實跟我們的日常生活息息相關。」<br><br>
+                                    **考驗1提示：** 「第一個考驗是，請填寫一件你自己身上不夠環保的物品，或是一種你生活中不環保的行為。至少寫3個字喔！」<br>
+                                    **考驗2提示：** 「第二個考驗是，請說明你剛剛寫下的物品或行為為什麼不夠環保。至少寫6個字喔！」<br><br>
+                                    <strong>指導老師：</strong> 「完成考驗後，請思考並記錄：針對你們家園被破壞的情況，你認為透過人類行為可以如何修復你們的棲地？以及你對這個解方的理解和在生活中可以如何應用？」
+                                    </td>
+                                    <td>觀察各組進度，鼓勵學員誠實面對自己的生活習慣。如果學員卡關，可以舉例引導。強調完成考驗才能「解鎖」他們選擇的解方。</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>10. 個人反思與行動承諾</strong></td>
+                                    <td>10 分鐘</td>
+                                    <td><strong>指導老師：</strong> 「現在，請大家思考一下，你今天扮演的角色和牠的家園，跟你自己的生活有什麼關係呢？以及，身為地球的一份子，我們可以為環境做些什麼？請在筆記區寫下你們小組討論出來的合作方案，以及你個人的行動承諾。」</td>
+                                    <td>引導學生將遊戲體驗內化，思考實際的行動方案。</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <hr>
+                        <h3>第四階段：分享與總結 (約 15-20 分鐘)</h3>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>步驟</th>
+                                    <th>時間 (分鐘)</th>
+                                    <th>教學活動內容與指導語</th>
+                                    <th>教學提示</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>11. 故事創作與分享</strong></td>
+                                    <td>10-15 分鐘</td>
+                                    <td><strong>指導老師：</strong> 「現在，請按下『同步筆記到故事』按鈕，你們的冒險歷程會自動生成一篇故事草稿。請和你的夥伴一起潤飾它，讓它成為你們小組獨一無二的冒險故事。稍後，我們將邀請幾組同學來分享你們的故事。」</td>
+                                    <td>鼓勵學員加入更多形容詞、心情描述，讓故事更具情感。可以設定分享時間限制。</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>12. 總結與展望</strong></td>
+                                    <td>5 分鐘</td>
+                                    <td><strong>指導老師：</strong> 「非常感謝大家的精彩分享！今天我們都經歷了一場特別的旅程。從這些動物的視角，我們看到了棲地面臨的各種挑戰，也思考了我們可以做些什麼。希望大家能把今天的感受和學習帶回生活中，從一個小小的行動開始，一起為我們的地球盡一份心力！別忘了點擊『下載故事HTML檔案』，將你們的冒險故事和承諾保存下來。」</td>
+                                    <td>總結活動的核心價值，強調行動的重要性。鼓勵學員將所學應用於日常。</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                    <h2>五、評量方式</h2>
+                    <ul>
+                        <li><strong>過程評量：</strong>
+                            <ul>
+                                <li>觀察學員在小組討論中的參與度、溝通協作情況。</li>
+                                <li>檢視學員在互動網頁上填寫的筆記內容完整性與思考深度。</li>
+                            </ul>
+                        </li>
+                        <li><strong>成果評量：</strong>
+                            <ul>
+                                <li>評估各組最終產出的「環境冒險故事」，檢視其內容是否完整、邏輯是否通順、是否能連結各項卡片資訊與反思。</li>
+                            </ul>
+                        </li>
+                        <li><strong>口頭評量：</strong>
+                            <ul>
+                                <li>在分享環節，評估學員對生態議題的理解與表達能力。</li>
+                            </ul>
+                        </li>
+                        <li><strong>行動評量（延伸）：</strong>
+                            <ul>
+                                <li>鼓勵學員在課後實踐其「個人行動承諾」，可設計後續追蹤或分享機制。</li>
+                            </ul>
+                        </li>
+                    </ul>
+
+                    <h2>六、附錄：卡牌資料參考</h2>
+                    <ul>
+                        <li><strong>角色卡 (Character Cards):</strong> 蜜蜂, 食蛇龜, 金線蛙, 石虎, 綠蠵龜</li>
+                        <li><strong>棲地卡 (Habitat Cards):</strong> 熱帶及亞熱帶海域, 低海拔丘陵林地, 多樣化農田生態系, 丘陵森林濕地, 草原森林農場</li>
+                        <li><strong>線索卡 (Clue Cards):</strong> 觀光與遊憩活動, 農業生產與土地利用, 基礎設施與開發建設, 資源利用與非法行為, 化學物質使用, 環境污染</li>
+                        <li><strong>解方卡 (Solution Cards):</strong> 減塑行動與垃圾管理, 友善農漁產品消費, 生態旅遊與友善觀光, 社區行動與志工參與, 生態環境教育推動, 設置生物綠帶, 綠色消費</li>
+                    </ul>
+                    <hr>
+                    <p><strong>指導老師注意事項：</strong></p>
+                    <ul>
+                        <li>活動前務必熟悉網頁操作，並預先測試所有功能。</li>
+                        <li>根據學員年齡和背景調整引導語的深度和複雜度。</li>
+                        <li>鼓勵學員發揮創意，並尊重不同的觀點和想法。</li>
+                        <li>強調合作與溝通的重要性。</li>
+                        <li>適時給予引導和協助，確保活動順利進行。</li>
+                        <li>若時間有限，可酌情調整各環節的時間分配。</li>
+                    </ul>
+                </body>
+                </html>
+                `;
+                const guideWindow = window.open("https://docs.google.com/document/d/1vuKAqQ-JTBdO7CYI8IJd5BdroPfNHMjO9unnKH4CNtA/edit?usp=sharing", "_blank");
+                // It's generally not possible to directly write content to a Google Docs URL this way.
+                // The best approach is to link directly to the Google Doc.
+                // If you need to display the content within your app, you'd typically embed it or fetch and parse it,
+                // but for a simple link to a guide, window.open is sufficient.
+            } else if (password !== null) { 
+                alert("密碼錯誤！");
+            }
+        });
+
+        // Initialize solution card dropdown
+        const desiredSolutionCardSelect = document.getElementById('desiredSolutionCard');
+        cardData.solution.forEach(sol => {
+            const option = document.createElement('option');
+            option.value = sol.name;
+            option.textContent = `${sol.name} (${sol.emoji})`;
+            desiredSolutionCardSelect.appendChild(option);
+        });
+
+    </script>
+</body>
+</html>
