@@ -145,6 +145,25 @@
             text-decoration: none;
             cursor: pointer;
         }
+        .site-footer {
+            font-size: 0.75rem; /* Small text */
+            color: #4b5563; /* Tailwind gray-600 */
+            text-align: center;
+            padding: 2rem 1rem;
+            margin-top: 2rem;
+            border-top: 1px solid #e5e7eb; /* Tailwind gray-200 */
+            line-height: 1.5;
+        }
+        .site-footer a {
+            color: #3b82f6; /* Tailwind blue-500 */
+            text-decoration: underline;
+        }
+        .site-footer a:hover {
+            color: #1d4ed8; /* Tailwind blue-700 */
+        }
+        .site-footer p {
+            margin-bottom: 0.5rem;
+        }
     </style>
 </head>
 <body class="bg-green-50 text-gray-800 p-4 md:p-8">
@@ -476,6 +495,26 @@
                 下載故事HTML檔案
             </button>
         </section>
+
+        <!-- Footer Section -->
+        <footer class="site-footer">
+            <p>【臺大、山林、學院2.0】大學社會責任實踐計畫，水里里山生態廊道贊助開發</p>
+            <p>
+                執行單位: 社團法人南投縣水里鄉商圈創生共好協會 | 
+                社團法人南投縣青年農民永續發展協會 | 
+                水里里山基地 <a href="https://www.facebook.com/Satoyamadining" target="_blank" rel="noopener noreferrer">#里山餐桌團隊</a> | 
+                #第七屆百大青農 | 
+                國立臺灣大學USR「臺大．山林．學院2.0」#水里營林區 | 
+                山形兒童活動工作室 Wild Kids Studio
+            </p>
+            <p>© 2025 水里永續共好聯盟。版權所有。</p>
+            <p>
+                V2.2，歡迎至FACEBOOK粉專「<a href="https://www.facebook.com/Satoyamadining" target="_blank" rel="noopener noreferrer">里山餐桌</a>」提出建議。
+                其他互動式網頁開發: <a href="https://farmcmd.github.io/Create/" target="_blank" rel="noopener noreferrer">水里永續共好聯盟 – 山村永續旅遊</a>。
+                開發者信箱: <a href="mailto:farmcmd@gmail.com">陳宏瑋</a>。
+            </p>
+        </footer>
+
 
         <!-- Modal for Password Input -->
         <div id="passwordModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center hidden z-50">
