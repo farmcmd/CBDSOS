@@ -14,6 +14,10 @@
             perspective: 1000px;
             cursor: pointer;
         }
+        .card-container.card-drawn { /* Style for drawn card piles */
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
         .card-inner {
             position: relative;
             width: 100%;
@@ -540,6 +544,14 @@
         function drawCard(type) {
             try {
                 console.log(`Attempting to draw card of type: ${type}`);
+                const cardContainer = document.getElementById(`${type}CardContainer`);
+
+                // 檢查卡牌是否已經被抽過 (通過檢查 onclick 是否還存在)
+                if (!cardContainer || !cardContainer.hasAttribute('onclick')) {
+                    console.log(`Card type ${type} has already been drawn or container not found.`);
+                    return; // 如果沒有 onclick 屬性，代表已經被移除，不能再抽
+                }
+
                 const cards = cardData[type];
                 if (!cards || cards.length === 0) {
                     console.warn(`No cards found for type: ${type}`);
@@ -552,11 +564,10 @@
                 
                 drawnCards[type] = card;
 
-                const cardContainer = document.getElementById(`${type}CardContainer`);
                 const cardBack = document.getElementById(`${type}CardBack`);
                 
-                if (!cardContainer || !cardBack) {
-                    console.error(`Card container or back not found for type: ${type}`);
+                if (!cardBack) {
+                    console.error(`Card back not found for type: ${type}`);
                     return;
                 }
 
@@ -571,7 +582,12 @@
 
                 updateDrawnCardDisplay(type, card);
                 updateStoryFormWithCard(type, card);
-                console.log(`Card draw successful for type: ${type}`);
+
+                // 移除 onclick 事件並添加已抽取樣式
+                cardContainer.removeAttribute('onclick');
+                cardContainer.classList.add('card-drawn');
+
+                console.log(`Card draw successful for type: ${type}. Onclick removed.`);
             } catch (error) {
                 console.error(`Error in drawCard for type ${type}:`, error);
             }
@@ -876,7 +892,7 @@
                                     font-family: 'Courier New', Courier, monospace; 
                                     overflow-wrap: break-word;
                                     word-wrap: break-word; 
-                                    word-break: break-all; /* More aggressive breaking */
+                                    word-break: break-all; 
                                 }
                                 .form-data p { margin: 5px 0; }
                                 .form-data strong { color: #2c5282; min-width: 180px; display: inline-block;}
